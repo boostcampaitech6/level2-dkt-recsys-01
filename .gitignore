@@ -207,3 +207,4 @@ pyrightconfig.json
 
 # judy added
 catboost_info
+wandb
