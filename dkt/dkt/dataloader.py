@@ -115,9 +115,16 @@ class Preprocess:
         user_test_duration.columns = ['testId', 'userID', 'duration']
         duration_per_test = user_test_duration.groupby('testId').agg({'duration': lambda x: x.median()})
         df = df.merge(duration_per_test, how='left', on='testId')
+        del duration_per_test
 
         ########### 2. testId 별로 순번에 따라 시험시작시간과 경과시간을 추가
-        # 제한시간이 있다면, 현재까지 사용한 시간도 중요함
+        # 제한시간이 있다면, 현재까지 사용한 시간이 중요하지 않을까
+        user_test_timestamp['startTime'] = user_test_timestamp[['userID', 'testId', 'Timestamp']]\
+            .groupby(['userID', 'testId'])['Timestamp'].transform(lambda r: r.min())
+        
+        user_test_timestamp['elapsedTime'] = (user_test_timestamp['Timestamp'] - user_test_timestamp['startTime']).dt.total_seconds()
+
+        df = df.merge(user_test_timestamp[['userID', 'testId', 'elapsedTime']], how='left', on=['userID', 'testId'])
 
         return df
 
