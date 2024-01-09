@@ -31,10 +31,10 @@ class ModelBase(nn.Module):
         self.embedding_duration = nn.Linear(1, 1).float()
         self.embedding_elapsed_time = nn.Linear(1, 1).float()
 
-        # self.embedding_time = nn.Linear(2, intd).float()
+        self.embedding_time = nn.Linear(2, intd).float()
 
         # Concatentaed Embedding Projection
-        self.comb_proj = nn.Linear(intd * 4 + 2, hd)
+        self.comb_proj = nn.Linear(intd * 5, hd)
 
         # Fully connected layer
         self.fc = nn.Linear(hd, 1)
@@ -48,6 +48,7 @@ class ModelBase(nn.Module):
         embed_question = self.embedding_question(question.int())
         embed_tag = self.embedding_tag(tag.int())
         # embed_duration = self.embedding_duration(duration.unsqueeze(-1).float())
+        embed_time = self.embedding_time(torch.cat([duration.unsqueeze(2).float(), elapsedTime.unsqueeze(2).float()], dim=2))
 
         # print(embed_tag.shape, embed_duration.shape)
         embed = torch.cat(
@@ -56,8 +57,7 @@ class ModelBase(nn.Module):
                 embed_test,
                 embed_question,
                 embed_tag,
-                duration.unsqueeze(-1),
-                elapsedTime.unsqueeze(-1),
+                embed_time
             ],
             dim=2,
         )
