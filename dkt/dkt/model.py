@@ -29,14 +29,17 @@ class ModelBase(nn.Module):
 
         ### 1. duration
         self.embedding_duration = nn.Linear(1, 1).float()
+        self.embedding_elapsed_time = nn.Linear(1, 1).float()
+
+        # self.embedding_time = nn.Linear(2, intd).float()
 
         # Concatentaed Embedding Projection
-        self.comb_proj = nn.Linear(intd * 4 + 1, hd)
+        self.comb_proj = nn.Linear(intd * 4 + 2, hd)
 
         # Fully connected layer
         self.fc = nn.Linear(hd, 1)
     
-    def forward(self, test, question, tag, correct, mask, interaction, duration):
+    def forward(self, test, question, tag, correct, mask, interaction, duration, elapsedTime):
         # print(test.shape, question.shape, tag.shape, interaction.shape, duration.shape)
         batch_size = interaction.size(0)
         # Embedding
@@ -44,7 +47,7 @@ class ModelBase(nn.Module):
         embed_test = self.embedding_test(test.int())
         embed_question = self.embedding_question(question.int())
         embed_tag = self.embedding_tag(tag.int())
-        embed_duration = self.embedding_duration(duration.unsqueeze(-1).float())
+        # embed_duration = self.embedding_duration(duration.unsqueeze(-1).float())
 
         # print(embed_tag.shape, embed_duration.shape)
         embed = torch.cat(
@@ -53,8 +56,8 @@ class ModelBase(nn.Module):
                 embed_test,
                 embed_question,
                 embed_tag,
-                # embed_duration,
                 duration.unsqueeze(-1),
+                elapsedTime.unsqueeze(-1),
             ],
             dim=2,
         )
@@ -83,14 +86,15 @@ class LSTM(ModelBase):
             self.hidden_dim, self.hidden_dim, self.n_layers, batch_first=True
         )
 
-    def forward(self, test, question, tag, correct, mask, interaction, duration):
+    def forward(self, test, question, tag, correct, mask, interaction, duration, elapsedTime):
         X, batch_size = super().forward(test=test,
                                         question=question,
                                         tag=tag,
                                         correct=correct,
                                         mask=mask,
                                         interaction=interaction,
-                                        duration=duration)
+                                        duration=duration,
+                                        elapsedTime=elapsedTime)
         out, _ = self.lstm(X)
         out = out.contiguous().view(batch_size, -1, self.hidden_dim)
         out = self.fc(out).view(batch_size, -1)

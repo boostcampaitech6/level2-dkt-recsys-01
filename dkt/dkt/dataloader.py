@@ -107,7 +107,7 @@ class Preprocess:
 
         ############ 1. testId 별로 중간값을 테스트 시간으로 추가해줌
         # 테스트에 제한시간이 있진 않을까 싶어 테스트별 유저의 풀이시간을 기준으로 중간값 채택함
-        user_test_timestamp = df[['userID', 'testId', 'Timestamp']].copy()
+        user_test_timestamp = df[['userID', 'testId', 'Timestamp', 'assessmentItemID']].copy()
         user_test_timestamp['Timestamp'] = pd.to_datetime(user_test_timestamp['Timestamp'])  # Timestamp 열을 datetime 형식으로 변환
         
         user_test_duration = user_test_timestamp.groupby(['testId', 'userID'])['Timestamp']\
@@ -124,7 +124,7 @@ class Preprocess:
         
         user_test_timestamp['elapsedTime'] = (user_test_timestamp['Timestamp'] - user_test_timestamp['startTime']).dt.total_seconds()
 
-        df = df.merge(user_test_timestamp[['userID', 'testId', 'elapsedTime']], how='left', on=['userID', 'testId'])
+        df = df.merge(user_test_timestamp[['userID', 'assessmentItemID', 'elapsedTime']], how='left', on=['userID', 'assessmentItemID'])
 
         return df
 
@@ -149,7 +149,7 @@ class Preprocess:
         df = df.sort_values(by=["userID", "Timestamp"], axis=0)
         columns = ["userID", "assessmentItemID", "testId", "answerCode"]
         one_hot_cats = ["KnowledgeTag"]
-        additional_cols = ["duration"]
+        additional_cols = ["duration", "elapsedTime"]
         # one_hot_columns = [col for col in df.columns if any(cat in col for cat in one_hot_cats)]
 
         duration_per_test = dict(zip(df['testId'], df['duration']))
@@ -162,6 +162,7 @@ class Preprocess:
                     r["assessmentItemID"].values,
                     r["KnowledgeTag"].values,
                     r["testId"].map(duration_per_test).values,
+                    r["elapsedTime"].values,
                     r["answerCode"].values,
                 )
             )
@@ -185,7 +186,7 @@ class DKTDataset(torch.utils.data.Dataset):
         row = self.data[index]
         
         # Load from data
-        test, question, tag, duration, correct = row[0], row[1], row[2], row[3], row[4]
+        test, question, tag, duration, elapsedTime, correct = row[0], row[1], row[2], row[3], row[4], row[5]
         # print(type(duration), duration)
         data = {
             "test": torch.tensor(test + 1, dtype=torch.int), # unknown 때문에 +1 하는 듯?
@@ -193,6 +194,7 @@ class DKTDataset(torch.utils.data.Dataset):
             "tag": torch.tensor(tag + 1, dtype=torch.int),
             "correct": torch.tensor(correct, dtype=torch.int),
             "duration": torch.tensor(duration, dtype=torch.float),
+            "elapsedTime": torch.tensor(elapsedTime, dtype=torch.float)
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
