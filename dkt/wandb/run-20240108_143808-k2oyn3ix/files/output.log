@@ -1,0 +1,17 @@
+2024-01-08 14:38:15,223 - root - INFO - Building Model ...
+2024-01-08 14:38:15,229 - root - INFO - Start Training ...
+2024-01-08 14:38:15,640 - root - INFO - Start Training: Epoch 1
+Traceback (most recent call last):
+  File "/data/ephemeral/code/dkt/train.py", line 38, in <module>
+    main(args)
+  File "/data/ephemeral/code/dkt/train.py", line 32, in main
+    trainer.run(args=args, train_data=train_data, valid_data=valid_data, model=model)
+  File "/data/ephemeral/code/dkt/dkt/trainer.py", line 43, in run
+    train_auc, train_acc, train_loss = train(train_loader=train_loader,
+  File "/data/ephemeral/code/dkt/dkt/trainer.py", line 92, in train
+    preds = model(**batch)
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+TypeError: LSTM.forward() missing 1 required positional argument: 'duration'

@@ -1,0 +1,22 @@
+2024-01-09 01:34:19,521 - root - INFO - Building Model ...
+2024-01-09 01:34:19,527 - root - INFO - Start Training ...
+2024-01-09 01:34:19,800 - root - INFO - Start Training: Epoch 1
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+Traceback (most recent call last):
+  File "/data/ephemeral/code/dkt/train.py", line 38, in <module>
+    main(args)
+  File "/data/ephemeral/code/dkt/train.py", line 32, in main
+    trainer.run(args=args, train_data=train_data, valid_data=valid_data, model=model)
+  File "/data/ephemeral/code/dkt/dkt/trainer.py", line 43, in run
+    train_auc, train_acc, train_loss = train(train_loader=train_loader,
+  File "/data/ephemeral/code/dkt/dkt/trainer.py", line 92, in train
+    preds = model(**batch)
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/data/ephemeral/code/dkt/dkt/model.py", line 84, in forward
+    X, batch_size = super().forward(test=test,
+  File "/data/ephemeral/code/dkt/dkt/model.py", line 48, in forward
+    embed = torch.cat(
+RuntimeError: Tensors must have same number of dimensions: got 3 and 2

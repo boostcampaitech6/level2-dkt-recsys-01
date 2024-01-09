@@ -1,0 +1,113 @@
+2024-01-09 02:52:47,012 - root - INFO - Building Model ...
+2024-01-09 02:52:47,017 - root - INFO - Start Training ...
+2024-01-09 02:52:47,293 - root - INFO - Start Training: Epoch 1
+2024-01-09 02:52:47,495 - root - INFO - Training steps: 0 Loss: 0.6829
+2024-01-09 02:52:49,652 - root - INFO - Training steps: 50 Loss: 0.6902
+2024-01-09 02:52:50,415 - root - INFO - TRAIN AUC : 0.6415 ACC : 0.5213
+2024-01-09 02:52:51,363 - root - INFO - VALID AUC : 0.7133 ACC : 0.5224
+2024-01-09 02:52:51,365 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:52:51,375 - root - INFO - Start Training: Epoch 2
+2024-01-09 02:52:51,651 - root - INFO - Training steps: 0 Loss: 0.6871
+2024-01-09 02:52:53,370 - root - INFO - Training steps: 50 Loss: 0.6595
+2024-01-09 02:52:54,477 - root - INFO - TRAIN AUC : 0.7014 ACC : 0.5894
+2024-01-09 02:52:55,449 - root - INFO - VALID AUC : 0.7197 ACC : 0.6716
+2024-01-09 02:52:55,452 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:52:55,463 - root - INFO - Start Training: Epoch 3
+2024-01-09 02:52:55,685 - root - INFO - Training steps: 0 Loss: 0.6780
+2024-01-09 02:52:58,056 - root - INFO - Training steps: 50 Loss: 0.6435
+2024-01-09 02:52:58,760 - root - INFO - TRAIN AUC : 0.6995 ACC : 0.6542
+2024-01-09 02:52:59,794 - root - INFO - VALID AUC : 0.7094 ACC : 0.6637
+2024-01-09 02:52:59,795 - root - INFO - Start Training: Epoch 4
+2024-01-09 02:53:00,007 - root - INFO - Training steps: 0 Loss: 0.6505
+2024-01-09 02:53:01,659 - root - INFO - Training steps: 50 Loss: 0.6588
+2024-01-09 02:53:02,426 - root - INFO - TRAIN AUC : 0.7138 ACC : 0.6628
+2024-01-09 02:53:03,258 - root - INFO - VALID AUC : 0.7235 ACC : 0.6766
+2024-01-09 02:53:03,260 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:53:03,269 - root - INFO - Start Training: Epoch 5
+2024-01-09 02:53:03,556 - root - INFO - Training steps: 0 Loss: 0.6358
+2024-01-09 02:53:05,554 - root - INFO - Training steps: 50 Loss: 0.5470
+2024-01-09 02:53:06,640 - root - INFO - TRAIN AUC : 0.7245 ACC : 0.6674
+2024-01-09 02:53:07,762 - root - INFO - VALID AUC : 0.7291 ACC : 0.6736
+2024-01-09 02:53:07,764 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:53:07,773 - root - INFO - Start Training: Epoch 6
+2024-01-09 02:53:07,977 - root - INFO - Training steps: 0 Loss: 0.5692
+2024-01-09 02:53:09,633 - root - INFO - Training steps: 50 Loss: 0.6252
+2024-01-09 02:53:10,578 - root - INFO - TRAIN AUC : 0.7327 ACC : 0.6751
+2024-01-09 02:53:11,523 - root - INFO - VALID AUC : 0.7328 ACC : 0.6791
+2024-01-09 02:53:11,526 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:53:11,541 - root - INFO - Start Training: Epoch 7
+2024-01-09 02:53:11,819 - root - INFO - Training steps: 0 Loss: 0.6219
+2024-01-09 02:53:13,521 - root - INFO - Training steps: 50 Loss: 0.6523
+2024-01-09 02:53:14,283 - root - INFO - TRAIN AUC : 0.7383 ACC : 0.6758
+2024-01-09 02:53:15,149 - root - INFO - VALID AUC : 0.7358 ACC : 0.6851
+2024-01-09 02:53:15,153 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:53:15,165 - root - INFO - Start Training: Epoch 8
+2024-01-09 02:53:15,428 - root - INFO - Training steps: 0 Loss: 0.5712
+2024-01-09 02:53:17,621 - root - INFO - Training steps: 50 Loss: 0.6550
+2024-01-09 02:53:18,655 - root - INFO - TRAIN AUC : 0.7407 ACC : 0.6869
+2024-01-09 02:53:19,526 - root - INFO - VALID AUC : 0.7378 ACC : 0.6871
+2024-01-09 02:53:19,530 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:53:19,540 - root - INFO - Start Training: Epoch 9
+2024-01-09 02:53:19,811 - root - INFO - Training steps: 0 Loss: 0.5256
+2024-01-09 02:53:21,369 - root - INFO - Training steps: 50 Loss: 0.5669
+2024-01-09 02:53:22,365 - root - INFO - TRAIN AUC : 0.7432 ACC : 0.6886
+2024-01-09 02:53:23,425 - root - INFO - VALID AUC : 0.7379 ACC : 0.6891
+2024-01-09 02:53:23,427 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:53:23,444 - root - INFO - Start Training: Epoch 10
+2024-01-09 02:53:23,670 - root - INFO - Training steps: 0 Loss: 0.7465
+2024-01-09 02:53:25,150 - root - INFO - Training steps: 50 Loss: 0.5903
+2024-01-09 02:53:25,829 - root - INFO - TRAIN AUC : 0.7451 ACC : 0.6892
+2024-01-09 02:53:26,870 - root - INFO - VALID AUC : 0.7402 ACC : 0.6851
+2024-01-09 02:53:26,872 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:53:26,883 - root - INFO - Start Training: Epoch 11
+2024-01-09 02:53:27,218 - root - INFO - Training steps: 0 Loss: 0.6170
+2024-01-09 02:53:29,527 - root - INFO - Training steps: 50 Loss: 0.6320
+2024-01-09 02:53:30,200 - root - INFO - TRAIN AUC : 0.7466 ACC : 0.6903
+2024-01-09 02:53:31,020 - root - INFO - VALID AUC : 0.7391 ACC : 0.6876
+2024-01-09 02:53:31,024 - root - INFO - Start Training: Epoch 12
+2024-01-09 02:53:31,253 - root - INFO - Training steps: 0 Loss: 0.6987
+2024-01-09 02:53:32,859 - root - INFO - Training steps: 50 Loss: 0.6330
+2024-01-09 02:53:33,894 - root - INFO - TRAIN AUC : 0.7477 ACC : 0.6905
+2024-01-09 02:53:34,964 - root - INFO - VALID AUC : 0.7371 ACC : 0.6881
+2024-01-09 02:53:34,966 - root - INFO - Start Training: Epoch 13
+2024-01-09 02:53:35,176 - root - INFO - Training steps: 0 Loss: 0.6237
+2024-01-09 02:53:37,137 - root - INFO - Training steps: 50 Loss: 0.5637
+2024-01-09 02:53:38,187 - root - INFO - TRAIN AUC : 0.7487 ACC : 0.6907
+2024-01-09 02:53:39,270 - root - INFO - VALID AUC : 0.7394 ACC : 0.6866
+2024-01-09 02:53:39,271 - root - INFO - Start Training: Epoch 14
+2024-01-09 02:53:39,526 - root - INFO - Training steps: 0 Loss: 0.6173
+2024-01-09 02:53:41,303 - root - INFO - Training steps: 50 Loss: 0.5807
+2024-01-09 02:53:41,961 - root - INFO - TRAIN AUC : 0.7481 ACC : 0.6954
+2024-01-09 02:53:42,807 - root - INFO - VALID AUC : 0.7392 ACC : 0.6821
+2024-01-09 02:53:42,809 - root - INFO - Start Training: Epoch 15
+2024-01-09 02:53:43,071 - root - INFO - Training steps: 0 Loss: 0.6009
+2024-01-09 02:53:44,882 - root - INFO - Training steps: 50 Loss: 0.5268
+2024-01-09 02:53:45,848 - root - INFO - TRAIN AUC : 0.7499 ACC : 0.6943
+2024-01-09 02:53:46,727 - root - INFO - VALID AUC : 0.7381 ACC : 0.6831
+2024-01-09 02:53:46,728 - root - INFO - Start Training: Epoch 16
+2024-01-09 02:53:47,069 - root - INFO - Training steps: 0 Loss: 0.5969
+2024-01-09 02:53:48,892 - root - INFO - Training steps: 50 Loss: 0.6286
+2024-01-09 02:53:49,603 - root - INFO - TRAIN AUC : 0.7477 ACC : 0.6901
+2024-01-09 02:53:50,531 - root - INFO - VALID AUC : 0.7396 ACC : 0.6910
+2024-01-09 02:53:50,534 - root - INFO - Start Training: Epoch 17
+2024-01-09 02:53:50,778 - root - INFO - Training steps: 0 Loss: 0.5998
+2024-01-09 02:53:52,361 - root - INFO - Training steps: 50 Loss: 0.5789
+2024-01-09 02:53:53,129 - root - INFO - TRAIN AUC : 0.7509 ACC : 0.6937
+2024-01-09 02:53:53,882 - root - INFO - VALID AUC : 0.7389 ACC : 0.6881
+2024-01-09 02:53:53,884 - root - INFO - Start Training: Epoch 18
+2024-01-09 02:53:54,135 - root - INFO - Training steps: 0 Loss: 0.5929
+2024-01-09 02:53:55,800 - root - INFO - Training steps: 50 Loss: 0.5579
+2024-01-09 02:53:56,675 - root - INFO - TRAIN AUC : 0.7520 ACC : 0.6930
+2024-01-09 02:53:57,652 - root - INFO - VALID AUC : 0.7411 ACC : 0.6920
+2024-01-09 02:53:57,656 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:53:57,668 - root - INFO - Start Training: Epoch 19
+2024-01-09 02:53:57,988 - root - INFO - Training steps: 0 Loss: 0.6676
+2024-01-09 02:53:59,710 - root - INFO - Training steps: 50 Loss: 0.5923
+2024-01-09 02:54:00,354 - root - INFO - TRAIN AUC : 0.7509 ACC : 0.6939
+2024-01-09 02:54:01,307 - root - INFO - VALID AUC : 0.7420 ACC : 0.6791
+2024-01-09 02:54:01,312 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:54:01,334 - root - INFO - Start Training: Epoch 20
+2024-01-09 02:54:01,593 - root - INFO - Training steps: 0 Loss: 0.6864
+2024-01-09 02:54:03,698 - root - INFO - Training steps: 50 Loss: 0.6298
+2024-01-09 02:54:04,399 - root - INFO - TRAIN AUC : 0.7487 ACC : 0.6958
+2024-01-09 02:54:05,063 - root - INFO - VALID AUC : 0.7407 ACC : 0.6771

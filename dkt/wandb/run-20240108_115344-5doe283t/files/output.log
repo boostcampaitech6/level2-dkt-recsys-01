@@ -1,0 +1,99 @@
+2024-01-08 11:53:51,101 - root - INFO - Building Model ...
+2024-01-08 11:53:51,106 - root - INFO - Start Training ...
+2024-01-08 11:53:51,383 - root - INFO - Start Training: Epoch 1
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+2024-01-08 11:53:51,620 - root - INFO - Training steps: 0 Loss: 0.6932
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+2024-01-08 11:53:53,180 - root - INFO - Training steps: 50 Loss: 0.5871
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20]) torch.Size([64, 20])
+torch.Size([16, 20]) torch.Size([16, 20]) torch.Size([16, 20]) torch.Size([16, 20])
+Traceback (most recent call last):
+  File "/data/ephemeral/code/dkt/train.py", line 38, in <module>
+    main(args)
+  File "/data/ephemeral/code/dkt/train.py", line 32, in main
+    trainer.run(args=args, train_data=train_data, valid_data=valid_data, model=model)
+  File "/data/ephemeral/code/dkt/dkt/trainer.py", line 43, in run
+    train_auc, train_acc, train_loss = train(train_loader=train_loader,
+  File "/data/ephemeral/code/dkt/dkt/trainer.py", line 114, in train
+    auc, acc = get_metric(targets=total_targets, preds=total_preds)
+  File "/data/ephemeral/code/dkt/dkt/metric.py", line 8, in get_metric
+    auc = roc_auc_score(y_true=targets, y_score=preds)
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/sklearn/utils/_param_validation.py", line 214, in wrapper
+    return func(*args, **kwargs)
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/sklearn/metrics/_ranking.py", line 627, in roc_auc_score
+    return _average_binary_score(
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/sklearn/metrics/_base.py", line 75, in _average_binary_score
+    return binary_metric(y_true, y_score, sample_weight=sample_weight)
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/sklearn/metrics/_ranking.py", line 382, in _binary_roc_auc_score
+    raise ValueError(
+ValueError: Only one class present in y_true. ROC AUC score is not defined in that case.

@@ -1,0 +1,31 @@
+2024-01-08 23:55:35,950 - root - INFO - Building Model ...
+2024-01-08 23:55:36,009 - root - INFO - Start Training ...
+2024-01-08 23:55:36,527 - root - INFO - Start Training: Epoch 1
+Traceback (most recent call last):
+  File "/data/ephemeral/code/dkt/train.py", line 38, in <module>
+    main(args)
+  File "/data/ephemeral/code/dkt/train.py", line 32, in main
+    trainer.run(args=args, train_data=train_data, valid_data=valid_data, model=model)
+  File "/data/ephemeral/code/dkt/dkt/trainer.py", line 43, in run
+    train_auc, train_acc, train_loss = train(train_loader=train_loader,
+  File "/data/ephemeral/code/dkt/dkt/trainer.py", line 90, in train
+    for step, batch in enumerate(train_loader):
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 630, in __next__
+    data = self._next_data()
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1345, in _next_data
+    return self._process_data(data)
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/utils/data/dataloader.py", line 1371, in _process_data
+    data.reraise()
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/_utils.py", line 694, in reraise
+    raise exception
+TypeError: Caught TypeError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/utils/data/_utils/worker.py", line 308, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 51, in fetch
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/utils/data/_utils/fetch.py", line 51, in <listcomp>
+    data = [self.dataset[idx] for idx in possibly_batched_index]
+  File "/data/ephemeral/code/dkt/dkt/dataloader.py", line 181, in __getitem__
+    "duration": torch.tensor(duration, dtype=torch.float),
+TypeError: can't convert np.ndarray of type numpy.timedelta64. The only supported types are: float64, float32, float16, complex64, complex128, int64, int32, int16, int8, uint8, and bool.

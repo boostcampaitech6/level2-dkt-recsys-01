@@ -1,0 +1,57 @@
+2024-01-09 02:34:00,327 - root - INFO - Building Model ...
+2024-01-09 02:34:00,333 - root - INFO - Start Training ...
+2024-01-09 02:34:00,608 - root - INFO - Start Training: Epoch 1
+2024-01-09 02:34:00,859 - root - INFO - Training steps: 0 Loss: 0.6956
+2024-01-09 02:34:02,937 - root - INFO - Training steps: 50 Loss: 0.6875
+2024-01-09 02:34:03,831 - root - INFO - TRAIN AUC : 0.5357 ACC : 0.5292
+2024-01-09 02:34:04,957 - root - INFO - VALID AUC : 0.5787 ACC : 0.5507
+2024-01-09 02:34:04,958 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:34:04,981 - root - INFO - Start Training: Epoch 2
+2024-01-09 02:34:05,264 - root - INFO - Training steps: 0 Loss: 0.6946
+2024-01-09 02:34:08,069 - root - INFO - Training steps: 50 Loss: 0.6878
+2024-01-09 02:34:08,949 - root - INFO - TRAIN AUC : 0.5560 ACC : 0.5352
+2024-01-09 02:34:09,682 - root - INFO - VALID AUC : 0.5796 ACC : 0.5373
+2024-01-09 02:34:09,684 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:34:09,696 - root - INFO - Start Training: Epoch 3
+2024-01-09 02:34:09,907 - root - INFO - Training steps: 0 Loss: 0.6874
+2024-01-09 02:34:12,485 - root - INFO - Training steps: 50 Loss: 0.6921
+2024-01-09 02:34:13,282 - root - INFO - TRAIN AUC : 0.5670 ACC : 0.5446
+2024-01-09 02:34:14,048 - root - INFO - VALID AUC : 0.5812 ACC : 0.5547
+2024-01-09 02:34:14,049 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:34:14,071 - root - INFO - Start Training: Epoch 4
+2024-01-09 02:34:14,313 - root - INFO - Training steps: 0 Loss: 0.6987
+2024-01-09 02:34:16,086 - root - INFO - Training steps: 50 Loss: 0.6971
+2024-01-09 02:34:17,153 - root - INFO - TRAIN AUC : 0.5528 ACC : 0.5390
+2024-01-09 02:34:18,272 - root - INFO - VALID AUC : 0.5802 ACC : 0.5622
+2024-01-09 02:34:18,273 - root - INFO - Start Training: Epoch 5
+2024-01-09 02:34:18,566 - root - INFO - Training steps: 0 Loss: 0.6915
+2024-01-09 02:34:20,370 - root - INFO - Training steps: 50 Loss: 0.6929
+2024-01-09 02:34:21,134 - root - INFO - TRAIN AUC : 0.5513 ACC : 0.5371
+2024-01-09 02:34:21,927 - root - INFO - VALID AUC : 0.5919 ACC : 0.5249
+2024-01-09 02:34:21,932 - root - INFO - saving model as models/best_model.pt...
+2024-01-09 02:34:21,943 - root - INFO - Start Training: Epoch 6
+2024-01-09 02:34:22,246 - root - INFO - Training steps: 0 Loss: 0.6904
+2024-01-09 02:34:24,546 - root - INFO - Training steps: 50 Loss: 0.6856
+2024-01-09 02:34:25,263 - root - INFO - TRAIN AUC : 0.5508 ACC : 0.5463
+2024-01-09 02:34:26,124 - root - INFO - VALID AUC : 0.5814 ACC : 0.5557
+2024-01-09 02:34:26,127 - root - INFO - Start Training: Epoch 7
+2024-01-09 02:34:26,396 - root - INFO - Training steps: 0 Loss: 0.6910
+2024-01-09 02:34:28,823 - root - INFO - Training steps: 50 Loss: 0.6881
+2024-01-09 02:34:29,818 - root - INFO - TRAIN AUC : 0.5596 ACC : 0.5478
+2024-01-09 02:34:30,536 - root - INFO - VALID AUC : 0.5803 ACC : 0.5527
+2024-01-09 02:34:30,538 - root - INFO - Start Training: Epoch 8
+2024-01-09 02:34:30,772 - root - INFO - Training steps: 0 Loss: 0.6866
+2024-01-09 02:34:32,409 - root - INFO - Training steps: 50 Loss: 0.6895
+2024-01-09 02:34:33,207 - root - INFO - TRAIN AUC : 0.5614 ACC : 0.5495
+2024-01-09 02:34:34,271 - root - INFO - VALID AUC : 0.5850 ACC : 0.5652
+2024-01-09 02:34:34,273 - root - INFO - Start Training: Epoch 9
+2024-01-09 02:34:34,523 - root - INFO - Training steps: 0 Loss: 0.6842
+2024-01-09 02:34:36,445 - root - INFO - Training steps: 50 Loss: 0.6785
+2024-01-09 02:34:37,453 - root - INFO - TRAIN AUC : 0.5540 ACC : 0.5452
+2024-01-09 02:34:38,219 - root - INFO - VALID AUC : 0.5751 ACC : 0.5473
+2024-01-09 02:34:38,221 - root - INFO - Start Training: Epoch 10
+2024-01-09 02:34:38,484 - root - INFO - Training steps: 0 Loss: 0.6909
+2024-01-09 02:34:40,443 - root - INFO - Training steps: 50 Loss: 0.7131
+2024-01-09 02:34:41,250 - root - INFO - TRAIN AUC : 0.5525 ACC : 0.5427
+2024-01-09 02:34:42,071 - root - INFO - VALID AUC : 0.5841 ACC : 0.5721
+2024-01-09 02:34:42,074 - root - INFO - EarlyStopping counter: 5 out of 5
