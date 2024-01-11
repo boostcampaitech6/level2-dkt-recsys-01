@@ -1,21 +1,26 @@
 #INITIAL SETTINGS
+modelname: rnn
+result_dir: ../results/
 data_dir: . #../data/
 data_version: v1
+wandb_config:
+  wandb: True
+  project_name: dkt-dl
 # train_data_name: train_dataset_v1.pt
 # valid_data_name: valid_dataset_v1.pt
 # test_data_name: test_dataset_v1.pt
-modelname: rnn
-result_dir: ../results/
 
-# RNN parameters
-batch_size: 128
-emb_dim: 16
-hidden_dim: 16
-activation_f: tanh
-learnin_rate: .1
-epochs: 100
-patience: 20
+# train params
+train_config:
+  # RNN parameters
+  batch_size: 128
+  emb_dim: 16
+  hidden_dim: 16
+  activation_f: tanh
+  learnin_rate: .1
+  epochs: 100
+  patience: 20
 
-# lr scheduler
-T_max: 10
-eta_min: 0
+  # lr scheduler
+  T_max: 10
+  eta_min: 0
