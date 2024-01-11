@@ -1,5 +1,5 @@
 #INITIAL SETTINGS
-modelname: rnn
+modelname: lstm
 result_dir: ../results/
 data_dir: . #../data/
 data_version: v1
