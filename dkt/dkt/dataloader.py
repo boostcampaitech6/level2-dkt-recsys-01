@@ -3,12 +3,11 @@ import random
 import time
 from datetime import datetime
 from typing import Tuple
-import joblib
 
 import numpy as np
 import pandas as pd
 import torch
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
 
 
 class Preprocess:
@@ -46,7 +45,6 @@ class Preprocess:
 
     def __preprocessing(self, df: pd.DataFrame, is_train: bool = True) -> pd.DataFrame:
         cate_cols = ["assessmentItemID", "testId", "KnowledgeTag"]
-        # one_hot_cols = ["KnowledgeTag"]
 
         if not os.path.exists(self.args.asset_dir):
             os.makedirs(self.args.asset_dir)
@@ -70,28 +68,6 @@ class Preprocess:
             df[col] = df[col].astype(str)
             test = le.transform(df[col])
             df[col] = test
-
-        # for col in one_hot_cols:
-        #     encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
-        
-        #     if is_train:
-        #         # For UNKNOWN class
-        #         a = df[col].unique().reshape(-1, 1)
-        #         encoder.fit(a)
-        #         # self.__save_labels(encoder, col)
-        #     else:
-        #         label_path = os.path.join(self.args.asset_dir, col + "_encoder.joblib")
-        #         encoder = joblib.load(label_path)
-
-        #         df[col] = df[col].apply(
-        #             lambda x: x if str(x) in encoder.categories_[0] else "unknown"
-        #         )
-
-        #     # 모든 컬럼이 범주형이라고 가정
-        #     df[col] = df[col].astype(str)
-        #     encoded_values = encoder.transform(df[col].values.reshape(-1, 1))
-        #     df = pd.concat([df, pd.DataFrame(encoded_values, columns=[f"{col}_{int(i)}" for i in range(encoded_values.shape[1])])], axis=1)
-        #     df = df.drop(col, axis=1)
 
         def convert_time(s: str):
             timestamp = time.mktime(
@@ -119,20 +95,32 @@ class Preprocess:
 
         ########### 2. testId 별로 순번에 따라 시험시작시간과 경과시간을 추가
         # 제한시간이 있다면, 현재까지 사용한 시간이 중요하지 않을까
-        user_test_timestamp['startTime'] = user_test_timestamp[['userID', 'testId', 'Timestamp']]\
-            .groupby(['userID', 'testId'])['Timestamp'].transform(lambda r: r.min())
+        # user_test_timestamp['startTime'] = user_test_timestamp[['userID', 'testId', 'Timestamp']]\
+        #     .groupby(['userID', 'testId'])['Timestamp'].transform(lambda r: r.min())
         
-        user_test_timestamp['elapsedTime'] = (user_test_timestamp['Timestamp'] - user_test_timestamp['startTime']).dt.total_seconds()
+        # user_test_timestamp['elapsedTime'] = (user_test_timestamp['Timestamp'] - user_test_timestamp['startTime']).dt.total_seconds()
 
-        df = df.merge(user_test_timestamp[['userID', 'assessmentItemID', 'elapsedTime']], how='left', on=['userID', 'assessmentItemID'])
+        # df = df.merge(user_test_timestamp[['userID', 'assessmentItemID', 'elapsedTime']], how='left', on=['userID', 'assessmentItemID'])
+
+        ########### 3. testId, 일자별로 user를 그룹화한 값을 추가
+        # 단체 응시 같은 유형이 있으면, 같은 시험을 비슷한 시간대에 응시하지 않았을까
+        # 일단은 일 단위로 자름
+        timestamp = pd.to_datetime(df['Timestamp'])
+        df['day'] = timestamp.dt.date
+        df['user_category'] = df[['userID', 'testId', 'day']].groupby(['day', 'testId']).ngroup()
+
+        ########### 4. testID를 자른 값을 추가
+        # testID값을 분리한 값을 추가
+        df['test_group_one'] = df['testId'].apply(lambda x: int(x[1:4]))
+        df['test_group_two'] = df['testId'].apply(lambda x: int(x[-3:]))
 
         return df
 
     def load_data_from_file(self, file_name: str, is_train: bool = True) -> np.ndarray:
-        csv_file_path = os.path.join(self.args.data_dir, file_name)
-        df = pd.read_csv(csv_file_path)  # , nrows=100000)
-        df = self.__feature_engineering(df)
-        df = self.__preprocessing(df, is_train)
+        csv_file_path = os.path.join(self.args.data_dir, file_name) # 파일 path 설정
+        df = pd.read_csv(csv_file_path)  # , nrows=100000) # 파일 읽어옴
+        df = self.__feature_engineering(df) # FE 처리
+        df = self.__preprocessing(df, is_train) # 데이터 전처리
 
         # 추후 feature를 embedding할 시에 embedding_layer의 input 크기를 결정할때 사용
 
@@ -146,47 +134,56 @@ class Preprocess:
             np.load(os.path.join(self.args.asset_dir, "KnowledgeTag_classes.npy"))
         )
 
-        df = df.sort_values(by=["userID", "Timestamp"], axis=0)
+        df = df.sort_values(by=["userID", "Timestamp"], axis=0) # 유저별로 문제 풀기 시작한 시간순으로 정렬
         columns = ["userID", "assessmentItemID", "testId", "answerCode"]
         one_hot_cats = ["KnowledgeTag"]
-        additional_cols = ["duration", "elapsedTime"]
-        # one_hot_columns = [col for col in df.columns if any(cat in col for cat in one_hot_cats)]
+        additional_cols = ["duration", "user_category", "test_group_one", "test_group_two"]
 
-        duration_per_test = dict(zip(df['testId'], df['duration']))
+        ####### 1. 테스트별 제한 시간 feature 추가
+        duration_per_test = dict(zip(df['testId'], df['duration'])) # testID별 duration dict
+
         group = (
-            df[columns + one_hot_cats + additional_cols]
-            .groupby("userID")
+            df[columns + one_hot_cats + additional_cols] # 사용할 columns 의 series들만 dataFrame으로 가져옴
+            .groupby("userID") # 현재 풀어야 하는 문제가 순차적인 문제풀이를 했을때, 다음 문제를 맞출 수 있는지를 판단하는 문제이므로, 한 학생이 순차적으로 푼 문제를 묶어서 학습을 시켜야 함. 이를 위해 userID 로 묶어서 값을 사용.
             .apply(
-                lambda r: (
-                    r["testId"].values,
-                    r["assessmentItemID"].values,
-                    r["KnowledgeTag"].values,
-                    r["testId"].map(duration_per_test).values,
-                    r["elapsedTime"].values,
-                    r["answerCode"].values,
+                lambda r: ( # 각 row에 대해서 아래 열들을 묶어 데이터 프레임으로 반환
+                    r["testId"].values, # 테스트 ID 열:
+                    r["assessmentItemID"].values, #  문항 ID 열
+                    r["KnowledgeTag"].values, # 태그 열
+                    r["testId"].map(duration_per_test).values, # 테스트 제한시간 열
+                    # r["elapsedTime"].values, # 경과시간 열
+                    r["user_category"].values, # 유저 카테고리 열
+                    r["test_group_one"].values,
+                    r["test_group_two"].values,
+                    r["answerCode"].values, # target 열
                 )
             )
         )
 
-        return group.values
+        return group.to_numpy()
 
-    def load_train_data(self, file_name: str) -> None:
+    def load_train_data(self, file_name: str) -> None: # 훈련 데이터 로드
         self.train_data = self.load_data_from_file(file_name)
 
-    def load_test_data(self, file_name: str) -> None:
+    def load_test_data(self, file_name: str) -> None: # 테스트 데이터 로드
         self.test_data = self.load_data_from_file(file_name, is_train=False)
 
 
-class DKTDataset(torch.utils.data.Dataset):
+class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DKT모델에서 사용할 데이터 셋
     def __init__(self, data: np.ndarray, args):
-        self.data = data
-        self.max_seq_len = args.max_seq_len
+        self.data = data # 대상 데이터
+        self.max_seq_len = args.max_seq_len # 최대 시퀀스 길이
 
-    def __getitem__(self, index: int) -> dict:
+    '''
+    데이터 로더에서 로드해오는 단위 Data
+    여기서 index는 user단위를 나타냄
+    사용할 feature별로 (seq_len, feature_dim) shape의 dict로 반환함
+    '''
+    def __getitem__(self, index: int) -> dict: # 데이터 조회
         row = self.data[index]
         
         # Load from data
-        test, question, tag, duration, elapsedTime, correct = row[0], row[1], row[2], row[3], row[4], row[5]
+        test, question, tag, duration, userCategory, testGroupOne, testGroupTwo, correct = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
         # print(type(duration), duration)
         data = {
             "test": torch.tensor(test + 1, dtype=torch.int), # unknown 때문에 +1 하는 듯?
@@ -194,7 +191,10 @@ class DKTDataset(torch.utils.data.Dataset):
             "tag": torch.tensor(tag + 1, dtype=torch.int),
             "correct": torch.tensor(correct, dtype=torch.int),
             "duration": torch.tensor(duration, dtype=torch.float),
-            "elapsedTime": torch.tensor(elapsedTime, dtype=torch.float)
+            # "elapsedTime": torch.tensor(elapsedTime, dtype=torch.float),
+            # "user_category": torch.tensor(userCategory, dtype=torch.int),
+            "test_group_one": torch.tensor(testGroupOne, dtype=torch.int),
+            "test_group_two": torch.tensor(testGroupTwo, dtype=torch.int),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
@@ -216,7 +216,7 @@ class DKTDataset(torch.utils.data.Dataset):
         # Generate interaction: 이전 문제를 맞췄었는지 여부를 나타냄
         interaction = data["correct"] + 1  # 패딩을 위해 correct값에 1을 더해준다.
         interaction = interaction.roll(shifts=1) # 한칸씩 옆으로 옮김
-        interaction_mask = data["mask"].roll(shifts=1) # 한칸씩 옆으로 옮김
+        interaction_mask = data["mask"].roll(shifts=1) # 마스크도 한칸씩 옆으로 옮김
         interaction_mask[0] = 0 # 없음을 나타냄
         interaction = (interaction * interaction_mask).to(torch.int64) # interaction의 길이 보정
         data["interaction"] = interaction
@@ -226,7 +226,9 @@ class DKTDataset(torch.utils.data.Dataset):
     def __len__(self) -> int:
         return len(self.data)
 
-
+''' 
+DKT 데이터 셋을 로드하는 훈련용로더와 검증용로더를 튜플형태로 반환
+'''
 def get_loaders(args, train: np.ndarray, valid: np.ndarray) -> Tuple[torch.utils.data.DataLoader]:
     pin_memory = False
     train_loader, valid_loader = None, None

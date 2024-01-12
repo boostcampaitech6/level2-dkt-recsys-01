@@ -29,17 +29,17 @@ class ModelBase(nn.Module):
 
         ### 1. duration
         self.embedding_duration = nn.Linear(1, 1).float()
-        self.embedding_elapsed_time = nn.Linear(1, 1).float()
 
-        self.embedding_time = nn.Linear(2, intd).float()
+        self.embedding_user_category = nn.Linear(1, intd).float()
 
         # Concatentaed Embedding Projection
-        self.comb_proj = nn.Linear(intd * 5, hd)
+        features_len = intd * 4 + 2
+        self.comb_proj = nn.Linear(features_len, hd)
 
         # Fully connected layer
         self.fc = nn.Linear(hd, 1)
     
-    def forward(self, test, question, tag, correct, mask, interaction, duration, elapsedTime):
+    def forward(self, test, question, tag, correct, mask, interaction, duration, test_group_one, test_group_two):
         # print(test.shape, question.shape, tag.shape, interaction.shape, duration.shape)
         batch_size = interaction.size(0)
         # Embedding
@@ -48,7 +48,7 @@ class ModelBase(nn.Module):
         embed_question = self.embedding_question(question.int())
         embed_tag = self.embedding_tag(tag.int())
         # embed_duration = self.embedding_duration(duration.unsqueeze(-1).float())
-        embed_time = self.embedding_time(torch.cat([duration.unsqueeze(2).float(), elapsedTime.unsqueeze(2).float()], dim=2))
+        # embed_user_category = self.embedding_user_category(user_category.unsqueeze(-1).float())
 
         # print(embed_tag.shape, embed_duration.shape)
         embed = torch.cat(
@@ -57,7 +57,11 @@ class ModelBase(nn.Module):
                 embed_test,
                 embed_question,
                 embed_tag,
-                embed_time
+                # duration.unsqueeze(-1).float(),
+                test_group_one.unsqueeze(-1).int(),
+                test_group_two.unsqueeze(-1).int(),
+                # embed_user_category,
+                # embed_time
             ],
             dim=2,
         )
@@ -86,7 +90,7 @@ class LSTM(ModelBase):
             self.hidden_dim, self.hidden_dim, self.n_layers, batch_first=True
         )
 
-    def forward(self, test, question, tag, correct, mask, interaction, duration, elapsedTime):
+    def forward(self, test, question, tag, correct, mask, interaction, duration, test_group_one, test_group_two):
         X, batch_size = super().forward(test=test,
                                         question=question,
                                         tag=tag,
@@ -94,9 +98,11 @@ class LSTM(ModelBase):
                                         mask=mask,
                                         interaction=interaction,
                                         duration=duration,
-                                        elapsedTime=elapsedTime)
+                                        test_group_one=test_group_one,
+                                        test_group_two=test_group_two,)
         out, _ = self.lstm(X)
-        out = out.contiguous().view(batch_size, -1, self.hidden_dim)
+        out = out.contiguous()\
+            .view(batch_size, -1, self.hidden_dim)
         out = self.fc(out).view(batch_size, -1)
         return out
 
@@ -145,7 +151,8 @@ class LSTMATTN(ModelBase):
                                         interaction=interaction)
 
         out, _ = self.lstm(X)
-        out = out.contiguous().view(batch_size, -1, self.hidden_dim)
+        out = out.contiguous()\
+            .view(batch_size, -1, self.hidden_dim)
 
         extended_attention_mask = mask.unsqueeze(1).unsqueeze(2)
         extended_attention_mask = extended_attention_mask.to(dtype=torch.float32)
