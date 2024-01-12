@@ -114,6 +114,10 @@ class Preprocess:
         df['test_group_one'] = df['testId'].apply(lambda x: int(x[1:4]))
         df['test_group_two'] = df['testId'].apply(lambda x: int(x[-3:]))
 
+        ########### 5. itemID에서 순번을 자른 값을 추가
+        # 과제의 순번이 영향이 있지 않을까
+        df['serial'] = df['assessmentItemID'].apply(lambda x: int(x[-3:]))
+
         return df
 
     def load_data_from_file(self, file_name: str, is_train: bool = True) -> np.ndarray:
@@ -137,7 +141,7 @@ class Preprocess:
         df = df.sort_values(by=["userID", "Timestamp"], axis=0) # 유저별로 문제 풀기 시작한 시간순으로 정렬
         columns = ["userID", "assessmentItemID", "testId", "answerCode"]
         one_hot_cats = ["KnowledgeTag"]
-        additional_cols = ["duration", "user_category", "test_group_one", "test_group_two"]
+        additional_cols = ["duration", "user_category", "test_group_one", "test_group_two", "serial"]
 
         ####### 1. 테스트별 제한 시간 feature 추가
         duration_per_test = dict(zip(df['testId'], df['duration'])) # testID별 duration dict
@@ -155,6 +159,7 @@ class Preprocess:
                     r["user_category"].values, # 유저 카테고리 열
                     r["test_group_one"].values,
                     r["test_group_two"].values,
+                    r["serial"].values,
                     r["answerCode"].values, # target 열
                 )
             )
@@ -183,7 +188,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
         row = self.data[index]
         
         # Load from data
-        test, question, tag, duration, userCategory, testGroupOne, testGroupTwo, correct = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]
+        test, question, tag, duration, userCategory, testGroupOne, testGroupTwo, serial, correct = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8]
         # print(type(duration), duration)
         data = {
             "test": torch.tensor(test + 1, dtype=torch.int), # unknown 때문에 +1 하는 듯?
@@ -195,6 +200,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             # "user_category": torch.tensor(userCategory, dtype=torch.int),
             "test_group_one": torch.tensor(testGroupOne + 1, dtype=torch.int),
             "test_group_two": torch.tensor(testGroupTwo + 1, dtype=torch.int),
+            "serial": torch.tensor(serial, dtype=torch.int),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
