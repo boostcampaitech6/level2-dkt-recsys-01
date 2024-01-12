@@ -28,7 +28,7 @@ class ModelBase(nn.Module):
         self.embedding_tag = nn.Embedding(n_tags + 1, intd)
 
         # self.embedding_user_category = nn.Linear(1, intd).float()
-        test_group_dim = 110
+        test_group_dim = 115
         self.embedding_test_group_one = nn.Embedding(1001, test_group_dim)
         self.embedding_test_group_two = nn.Embedding(1001, test_group_dim)
 
