@@ -33,7 +33,7 @@ class ModelBase(nn.Module):
         self.embedding_test_group_two = nn.Embedding(1001, test_group_dim)
 
         # Concatentaed Embedding Projection
-        features_len = intd * 4 + test_group_dim * 2
+        features_len = intd * 4 + test_group_dim * 2 + 1
         self.comb_proj = nn.Linear(features_len, hd)
 
         # Fully connected layer
@@ -59,7 +59,7 @@ class ModelBase(nn.Module):
                 embed_test,
                 embed_question,
                 embed_tag,
-                # duration.unsqueeze(-1).float(),
+                duration.unsqueeze(-1).float(),
                 embed_test_group_one,
                 embed_test_group_two,
                 # embed_user_category,
