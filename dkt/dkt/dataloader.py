@@ -44,7 +44,7 @@ class Preprocess:
         np.save(le_path, encoder.classes_)
 
     def __preprocessing(self, df: pd.DataFrame, is_train: bool = True) -> pd.DataFrame:
-        cate_cols = ["assessmentItemID", "testId", "KnowledgeTag"]
+        cate_cols = ["assessmentItemID", "testId", "KnowledgeTag", "test_group_one", "test_group_two"]
 
         if not os.path.exists(self.args.asset_dir):
             os.makedirs(self.args.asset_dir)
@@ -193,8 +193,8 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "duration": torch.tensor(duration, dtype=torch.float),
             # "elapsedTime": torch.tensor(elapsedTime, dtype=torch.float),
             # "user_category": torch.tensor(userCategory, dtype=torch.int),
-            "test_group_one": torch.tensor(testGroupOne, dtype=torch.int),
-            "test_group_two": torch.tensor(testGroupTwo, dtype=torch.int),
+            "test_group_one": torch.tensor(testGroupOne + 1, dtype=torch.int),
+            "test_group_two": torch.tensor(testGroupTwo + 1, dtype=torch.int),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다

@@ -27,13 +27,13 @@ class ModelBase(nn.Module):
         self.embedding_question = nn.Embedding(n_questions + 1, intd)
         self.embedding_tag = nn.Embedding(n_tags + 1, intd)
 
-        ### 1. duration
-        self.embedding_duration = nn.Linear(1, 1).float()
-
-        self.embedding_user_category = nn.Linear(1, intd).float()
+        # self.embedding_user_category = nn.Linear(1, intd).float()
+        test_group_dim = 100
+        self.embedding_test_group_one = nn.Embedding(1001, test_group_dim)
+        self.embedding_test_group_two = nn.Embedding(1001, test_group_dim)
 
         # Concatentaed Embedding Projection
-        features_len = intd * 4 + 2
+        features_len = intd * 3 + test_group_dim * 2
         self.comb_proj = nn.Linear(features_len, hd)
 
         # Fully connected layer
@@ -49,17 +49,19 @@ class ModelBase(nn.Module):
         embed_tag = self.embedding_tag(tag.int())
         # embed_duration = self.embedding_duration(duration.unsqueeze(-1).float())
         # embed_user_category = self.embedding_user_category(user_category.unsqueeze(-1).float())
+        embed_test_group_one = self.embedding_test_group_one(test_group_one.int())
+        embed_test_group_two = self.embedding_test_group_one(test_group_two.int())
 
         # print(embed_tag.shape, embed_duration.shape)
         embed = torch.cat(
             [
                 embed_interaction,
-                embed_test,
+                # embed_test,
                 embed_question,
                 embed_tag,
                 # duration.unsqueeze(-1).float(),
-                test_group_one.unsqueeze(-1).int(),
-                test_group_two.unsqueeze(-1).int(),
+                embed_test_group_one,
+                embed_test_group_two,
                 # embed_user_category,
                 # embed_time
             ],
