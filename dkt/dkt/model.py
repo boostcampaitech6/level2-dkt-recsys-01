@@ -39,7 +39,7 @@ class ModelBase(nn.Module):
         self.embedding_correct_percent = nn.Linear(2, correct_percent_dim)
 
         # Concatentaed Embedding Projection
-        features_len = intd * 4 + test_group_dim * 2 + serial_dim + 5 + correct_percent_dim
+        features_len = intd * 4 + test_group_dim * 2 + serial_dim + 6 + correct_percent_dim
         self.comb_proj = nn.Linear(features_len, hd)
 
         # Fully connected layer
@@ -64,6 +64,7 @@ class ModelBase(nn.Module):
                 same_tag_wrong_before,
                 item_correct_percent,
                 user_correct_percent,
+                current_correct_count,
                 ):
         # print(test.shape, question.shape, tag.shape, interaction.shape, duration.shape)
         batch_size = interaction.size(0)
@@ -100,6 +101,7 @@ class ModelBase(nn.Module):
                 # same_tag_correct_before.unsqueeze(-1).int(),
                 # same_tag_wrong_before.unsqueeze(-1).int(),
                 embed_correct_percent,
+                current_correct_count.unsqueeze(-1).int(),
                 # embed_user_category,
                 # embed_time
             ],
@@ -149,6 +151,7 @@ class LSTM(ModelBase):
                 same_tag_wrong_before,
                 item_correct_percent,
                 user_correct_percent,
+                current_correct_count,
                 ):
         X, batch_size = super().forward(test=test,
                                         question=question,
@@ -168,6 +171,7 @@ class LSTM(ModelBase):
                                         same_tag_wrong_before=same_tag_wrong_before,
                                         item_correct_percent=item_correct_percent,
                                         user_correct_percent=user_correct_percent,
+                                        current_correct_count=current_correct_count,
                                         )
         out, _ = self.lstm(X)
         out = out.contiguous()\
