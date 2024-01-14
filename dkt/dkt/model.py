@@ -35,8 +35,11 @@ class ModelBase(nn.Module):
         serial_dim = 100
         self.embedding_serial = nn.Embedding(1001, serial_dim)
 
+        correct_percent_dim = 100
+        self.embedding_correct_percent = nn.Linear(2, correct_percent_dim)
+
         # Concatentaed Embedding Projection
-        features_len = intd * 4 + test_group_dim * 2 + serial_dim + 7
+        features_len = intd * 4 + test_group_dim * 2 + serial_dim + 5 + correct_percent_dim
         self.comb_proj = nn.Linear(features_len, hd)
 
         # Fully connected layer
@@ -74,6 +77,9 @@ class ModelBase(nn.Module):
         embed_test_group_one = self.embedding_test_group_one(test_group_one.int())
         embed_test_group_two = self.embedding_test_group_one(test_group_two.int())
         embed_serial = self.embedding_serial(serial.int())
+        embed_correct_percent = self.embedding_correct_percent(torch.concat([
+            item_correct_percent.unsqueeze(-1).float(), 
+            user_correct_percent.unsqueeze(-1).float()], dim=2))
 
         # print(embed_tag.shape, embed_duration.shape)
         embed = torch.cat(
@@ -93,8 +99,7 @@ class ModelBase(nn.Module):
                 same_tag_solved_count.unsqueeze(-1).int(),
                 # same_tag_correct_before.unsqueeze(-1).int(),
                 # same_tag_wrong_before.unsqueeze(-1).int(),
-                item_correct_percent.unsqueeze(-1).float(),
-                user_correct_percent.unsqueeze(-1).float(),
+                embed_correct_percent,
                 # embed_user_category,
                 # embed_time
             ],
