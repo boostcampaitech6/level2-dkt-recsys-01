@@ -47,7 +47,7 @@ class ModelBase(nn.Module):
 
         # Concatentaed Embedding Projection
         features_len = (intd * 4) + (test_group_dim * 2) + serial_dim\
-                      + 3 + (tag_group_dim * 1)
+                      + 3 + (tag_group_dim * 2)
         
         self.comb_proj = nn.Linear(features_len, hd)
 
@@ -124,7 +124,7 @@ class ModelBase(nn.Module):
                 # same_tag_wrong_before.unsqueeze(-1).int(),
                 #embed_correct_percent,
                 #current_correct_count.unsqueeze(-1).int(),
-                #embed_tag_group_one,
+                embed_tag_group_one,
                 embed_tag_group_two,
             ],
             dim=2,
