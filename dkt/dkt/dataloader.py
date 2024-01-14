@@ -124,10 +124,11 @@ class Preprocess:
 
         ########### 7. 유저별로 이전에 동일한 문제를 맞췄던 횟수를 추가
         # 동일한 과제를 맞췄었으면 다음번엔 맞출 확률이 높을 것
+        df['correct_before'] = df[['userID', 'assessmentItemID', 'answerCode']].groupby(['userID', 'assessmentItemID'])['answerCode'].cumsum()
+        df['correct_before'] = df['correct_before'] - df['answerCode']
 
         ########### 8. 유저별로 이전에 동일한 문제를 틀렸던 횟수를 추가
         # 동일한 과제를 틀렸었으면 다음번엔 맞출 확률이 높을 것
-
 
         return df
 
@@ -152,7 +153,14 @@ class Preprocess:
         df = df.sort_values(by=["userID", "Timestamp"], axis=0) # 유저별로 문제 풀기 시작한 시간순으로 정렬
         columns = ["userID", "assessmentItemID", "testId", "answerCode"]
         one_hot_cats = ["KnowledgeTag"]
-        additional_cols = ["duration", "user_category", "test_group_one", "test_group_two", "serial", "solved_count"]
+        additional_cols = ["duration", 
+                           "user_category", 
+                           "test_group_one", 
+                           "test_group_two", 
+                           "serial", 
+                           "solved_count", 
+                           "correct_before",
+                           ]
 
         ####### 1. 테스트별 제한 시간 feature 추가
         duration_per_test = dict(zip(df['testId'], df['duration'])) # testID별 duration dict
@@ -172,6 +180,7 @@ class Preprocess:
                     r["test_group_two"].values,
                     r["serial"].values,
                     r["solved_count"].values,
+                    r["correct_before"].values,
                     r["answerCode"].values, # target 열
                 )
             )
@@ -200,7 +209,19 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
         row = self.data[index]
         
         # Load from data
-        test, question, tag, duration, userCategory, testGroupOne, testGroupTwo, serial, solved_count, correct = row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9]
+        (test, question, tag, duration, userCategory, testGroupOne, testGroupTwo, serial, solved_count, correct_before, correct) = (
+            row[0], 
+            row[1], 
+            row[2], 
+            row[3], 
+            row[4], 
+            row[5], 
+            row[6], 
+            row[7], 
+            row[8], 
+            row[9],
+            row[10],
+            )
         # print(type(duration), duration)
         data = {
             "test": torch.tensor(test + 1, dtype=torch.int), # unknown 때문에 +1 하는 듯?
@@ -214,6 +235,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "test_group_two": torch.tensor(testGroupTwo + 1, dtype=torch.int),
             "serial": torch.tensor(serial, dtype=torch.int),
             "solved_count": torch.tensor(solved_count, dtype=torch.int),
+            "correct_before": torch.tensor(correct_before, dtype=torch.int),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
