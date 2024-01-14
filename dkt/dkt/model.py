@@ -36,7 +36,7 @@ class ModelBase(nn.Module):
         self.embedding_serial = nn.Embedding(1001, serial_dim)
 
         # Concatentaed Embedding Projection
-        features_len = intd * 4 + test_group_dim * 2 + serial_dim + 5
+        features_len = intd * 4 + test_group_dim * 2 + serial_dim + 7
         self.comb_proj = nn.Linear(features_len, hd)
 
         # Fully connected layer
@@ -60,6 +60,7 @@ class ModelBase(nn.Module):
                 same_tag_correct_before,
                 same_tag_wrong_before,
                 item_correct_percent,
+                user_correct_percent,
                 ):
         # print(test.shape, question.shape, tag.shape, interaction.shape, duration.shape)
         batch_size = interaction.size(0)
@@ -89,10 +90,11 @@ class ModelBase(nn.Module):
                 solved_count.unsqueeze(-1).int(),
                 correct_before.unsqueeze(-1).int(),
                 wrong_before.unsqueeze(-1).int(),
-                # same_tag_solved_count.unsqueeze(-1).int(),
+                same_tag_solved_count.unsqueeze(-1).int(),
                 # same_tag_correct_before.unsqueeze(-1).int(),
                 # same_tag_wrong_before.unsqueeze(-1).int(),
                 item_correct_percent.unsqueeze(-1).float(),
+                user_correct_percent.unsqueeze(-1).float(),
                 # embed_user_category,
                 # embed_time
             ],
@@ -141,6 +143,7 @@ class LSTM(ModelBase):
                 same_tag_correct_before,
                 same_tag_wrong_before,
                 item_correct_percent,
+                user_correct_percent,
                 ):
         X, batch_size = super().forward(test=test,
                                         question=question,
@@ -159,6 +162,7 @@ class LSTM(ModelBase):
                                         same_tag_correct_before=same_tag_correct_before,
                                         same_tag_wrong_before=same_tag_wrong_before,
                                         item_correct_percent=item_correct_percent,
+                                        user_correct_percent=user_correct_percent,
                                         )
         out, _ = self.lstm(X)
         out = out.contiguous()\

@@ -151,6 +151,15 @@ class Preprocess:
         item_percent = item_info['correct_percent'].to_dict()
         df['item_correct_percent'] = df['assessmentItemID'].map(item_percent)
 
+        ########### 13. 유저별 정답률을 추가
+        #유저의 정답률을 추가하면 유저의 수준을 알 수 있어 좋을 것이다.
+        user_info = df[['userID', 'answerCode']].groupby(['userID']).agg({'answerCode':['sum', 'count']})
+        user_info['correct_percent'] = user_info[('answerCode', 'sum')] / user_info[('answerCode', 'count')]
+        user_percent = user_info['correct_percent'].to_dict()
+        df['user_correct_percent'] = df['userID'].map(user_percent)
+
+        
+
         return df
 
     def load_data_from_file(self, file_name: str, is_train: bool = True) -> np.ndarray:
@@ -186,6 +195,7 @@ class Preprocess:
                            "same_tag_correct_before",
                            "same_tag_wrong_before",
                            "item_correct_percent",
+                           "user_correct_percent",
                            ]
 
         ####### 1. 테스트별 제한 시간 feature 추가
@@ -212,6 +222,7 @@ class Preprocess:
                     r["same_tag_correct_before"].values,
                     r["same_tag_wrong_before"].values,
                     r["item_correct_percent"].values,
+                    r["user_correct_percent"].values,
                     r["answerCode"].values, # target 열
                 )
             )
@@ -255,6 +266,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
          same_tag_correct_before,
          same_tag_wrong_before,
          item_correct_percent,
+         user_correct_percent,
          correct
          ) = (
             *row,
@@ -278,6 +290,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "same_tag_correct_before": torch.tensor(same_tag_correct_before, dtype=torch.int),
             "same_tag_wrong_before": torch.tensor(same_tag_wrong_before, dtype=torch.int),
             "item_correct_percent": torch.tensor(item_correct_percent, dtype=torch.float),
+            "user_correct_percent": torch.tensor(user_correct_percent, dtype=torch.float),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
