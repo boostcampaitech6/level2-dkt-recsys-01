@@ -27,6 +27,9 @@ class ModelBase(nn.Module):
         self.embedding_question = nn.Embedding(n_questions + 1, intd)
         self.embedding_tag = nn.Embedding(n_tags + 1, intd)
 
+        time_embedding_dim = 100
+        self.embedding_time = nn.Linear(2, time_embedding_dim)
+
         # self.embedding_user_category = nn.Linear(1, intd).float()
         test_group_dim = 115
         self.embedding_test_group_one = nn.Embedding(1001, test_group_dim)
@@ -38,33 +41,43 @@ class ModelBase(nn.Module):
         correct_percent_dim = 50
         self.embedding_correct_percent = nn.Linear(2, correct_percent_dim)
 
+        tag_group_dim = 100
+        self.embedding_tag_group_one = nn.Embedding(n_tags * 1000 + 1, tag_group_dim)
+        self.embedding_tag_group_two = nn.Embedding(n_tags * 1000 + 1, tag_group_dim)
+
         # Concatentaed Embedding Projection
-        features_len = intd * 4 + test_group_dim * 2 + serial_dim + 6 + correct_percent_dim
+        features_len = (intd * 4) + (test_group_dim * 2) + serial_dim\
+                      + 6 + correct_percent_dim + (tag_group_dim * 2)
+        
         self.comb_proj = nn.Linear(features_len, hd)
 
         # Fully connected layer
         self.fc = nn.Linear(hd, 1)
     
-    def forward(self, 
-                test, 
-                question, 
-                tag, 
-                correct, 
-                mask, 
-                interaction, 
-                duration, 
-                test_group_one, 
-                test_group_two, 
-                serial, 
-                solved_count, 
-                correct_before, 
-                wrong_before, 
+    def forward(self,
+                test,
+                question,
+                tag,
+                correct,
+                mask,
+                interaction,
+                duration,
+                startTime,
+                elapsedTime,
+                test_group_one,
+                test_group_two,
+                serial,
+                solved_count,
+                correct_before,
+                wrong_before,
                 same_tag_solved_count,
                 same_tag_correct_before,
                 same_tag_wrong_before,
                 item_correct_percent,
                 user_correct_percent,
                 current_correct_count,
+                tag_group_one,
+                tag_group_two,
                 ):
         # print(test.shape, question.shape, tag.shape, interaction.shape, duration.shape)
         batch_size = interaction.size(0)
@@ -80,7 +93,14 @@ class ModelBase(nn.Module):
         embed_serial = self.embedding_serial(serial.int())
         embed_correct_percent = self.embedding_correct_percent(torch.concat([
             item_correct_percent.unsqueeze(-1).float(), 
-            user_correct_percent.unsqueeze(-1).float()], dim=2))
+            user_correct_percent.unsqueeze(-1).float(),
+            ], dim=2))
+        embed_time = self.embedding_time(torch.concat([
+            duration.unsqueeze(-1).float(),
+            elapsedTime.unsqueeze(-1).float(),
+            ], dim=2))
+        embed_tag_group_one = self.embedding_tag_group_one(tag_group_one.int())
+        embed_tag_group_two = self.embedding_tag_group_two(tag_group_two.int())
 
         # print(embed_tag.shape, embed_duration.shape)
         embed = torch.cat(
@@ -90,6 +110,8 @@ class ModelBase(nn.Module):
                 embed_question,
                 embed_tag,
                 duration.unsqueeze(-1).float(),
+                # elapsedTime.unsqueeze(-1).float(),
+                # embed_time,
                 embed_test_group_one,
                 embed_test_group_two,
                 # serial.unsqueeze(-1).int(),
@@ -102,8 +124,8 @@ class ModelBase(nn.Module):
                 # same_tag_wrong_before.unsqueeze(-1).int(),
                 embed_correct_percent,
                 current_correct_count.unsqueeze(-1).int(),
-                # embed_user_category,
-                # embed_time
+                embed_tag_group_one,
+                embed_tag_group_two,
             ],
             dim=2,
         )
@@ -139,7 +161,9 @@ class LSTM(ModelBase):
                 correct, 
                 mask, 
                 interaction,
-                duration, 
+                duration,
+                startTime,
+                elapsedTime,
                 test_group_one, 
                 test_group_two, 
                 serial, 
@@ -152,6 +176,8 @@ class LSTM(ModelBase):
                 item_correct_percent,
                 user_correct_percent,
                 current_correct_count,
+                tag_group_one,
+                tag_group_two,
                 ):
         X, batch_size = super().forward(test=test,
                                         question=question,
@@ -160,6 +186,8 @@ class LSTM(ModelBase):
                                         mask=mask,
                                         interaction=interaction,
                                         duration=duration,
+                                        startTime=startTime,
+                                        elapsedTime=elapsedTime,
                                         test_group_one=test_group_one,
                                         test_group_two=test_group_two,
                                         serial=serial,
@@ -172,6 +200,8 @@ class LSTM(ModelBase):
                                         item_correct_percent=item_correct_percent,
                                         user_correct_percent=user_correct_percent,
                                         current_correct_count=current_correct_count,
+                                        tag_group_one=tag_group_one,
+                                        tag_group_two=tag_group_two,
                                         )
         out, _ = self.lstm(X)
         out = out.contiguous()\

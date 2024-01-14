@@ -44,7 +44,15 @@ class Preprocess:
         np.save(le_path, encoder.classes_)
 
     def __preprocessing(self, df: pd.DataFrame, is_train: bool = True) -> pd.DataFrame:
-        cate_cols = ["assessmentItemID", "testId", "KnowledgeTag", "test_group_one", "test_group_two"]
+        cate_cols = [
+            "assessmentItemID",
+            "testId",
+            "KnowledgeTag",
+            "test_group_one",
+            "test_group_two",
+            "tag_group_one",
+            "tag_group_two",
+            ]
 
         if not os.path.exists(self.args.asset_dir):
             os.makedirs(self.args.asset_dir)
@@ -74,8 +82,9 @@ class Preprocess:
                 datetime.strptime(s, "%Y-%m-%d %H:%M:%S").timetuple()
             )
             return int(timestamp)
-
+        
         df["Timestamp"] = df["Timestamp"].apply(convert_time)
+        df["startTime"] = df["startTime"].apply(convert_time)
         return df
 
     def __feature_engineering(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -95,12 +104,11 @@ class Preprocess:
 
         ########### 2. testId 별로 순번에 따라 시험시작시간과 경과시간을 추가
         # 제한시간이 있다면, 현재까지 사용한 시간이 중요하지 않을까
-        # user_test_timestamp['startTime'] = user_test_timestamp[['userID', 'testId', 'Timestamp']]\
-        #     .groupby(['userID', 'testId'])['Timestamp'].transform(lambda r: r.min())
-        
-        # user_test_timestamp['elapsedTime'] = (user_test_timestamp['Timestamp'] - user_test_timestamp['startTime']).dt.total_seconds()
-
-        # df = df.merge(user_test_timestamp[['userID', 'assessmentItemID', 'elapsedTime']], how='left', on=['userID', 'assessmentItemID'])
+        start_time = df[['userID', 'testId', 'Timestamp']].groupby(['userID', 'testId']).agg({'Timestamp':'min'})
+        start_time = start_time.to_dict()['Timestamp']
+        df['userID_testId'] = list(zip(df['userID'], df['testId']))
+        df['startTime'] = df['userID_testId'].map(start_time)
+        df['elapsedTime'] = (pd.to_datetime(df['Timestamp']) - pd.to_datetime(df['startTime'])).dt.total_seconds()
 
         ########### 3. testId, 일자별로 user를 그룹화한 값을 추가
         # 단체 응시 같은 유형이 있으면, 같은 시험을 비슷한 시간대에 응시하지 않았을까
@@ -166,7 +174,12 @@ class Preprocess:
         # user_info = user_info - df['answerCode']
         df['current_correct_count'] = user_info
         df['current_correct_count'] = df['current_correct_count'] - df['answerCode']
-        # del user_info
+        
+        ########### 15. 태그와 테스트 그룹간에 관계가 있지 않을까
+        #테스트 그룹을 포함시켰을때 성능이 올라갔는데, 테스트 그룹이 난이도를 나타낸다면,
+        #문제 유형으로 예상되는 태그와 연결시켰을때 얻을 수 있는 정보가 생기기 않을까
+        df['tag_group_one'] = df['KnowledgeTag'].astype(str) + df['test_group_one'].astype(str)
+        df['tag_group_two'] = df['KnowledgeTag'].astype(str) + df['test_group_two'].astype(str)
         
         return df
 
@@ -191,12 +204,14 @@ class Preprocess:
         df = df.sort_values(by=["userID", "Timestamp"], axis=0) # 유저별로 문제 풀기 시작한 시간순으로 정렬
         columns = ["userID", "assessmentItemID", "testId", "answerCode"]
         one_hot_cats = ["KnowledgeTag"]
-        additional_cols = ["duration", 
-                           "user_category", 
-                           "test_group_one", 
-                           "test_group_two", 
-                           "serial", 
-                           "solved_count", 
+        additional_cols = ["duration",
+                           "startTime",
+                           "elapsedTime",
+                           "user_category",
+                           "test_group_one",
+                           "test_group_two",
+                           "serial",
+                           "solved_count",
                            "correct_before",
                            "wrong_before",
                            "same_tag_solved_count",
@@ -205,6 +220,8 @@ class Preprocess:
                            "item_correct_percent",
                            "user_correct_percent",
                            "current_correct_count",
+                           "tag_group_one",
+                           "tag_group_two",
                            ]
 
         ####### 1. 테스트별 제한 시간 feature 추가
@@ -219,7 +236,8 @@ class Preprocess:
                     r["assessmentItemID"].values, #  문항 ID 열
                     r["KnowledgeTag"].values, # 태그 열
                     r["testId"].map(duration_per_test).values, # 테스트 제한시간 열
-                    # r["elapsedTime"].values, # 경과시간 열
+                    r["startTime"].values,
+                    r["elapsedTime"].values, # 경과시간 열
                     r["user_category"].values, # 유저 카테고리 열
                     r["test_group_one"].values,
                     r["test_group_two"].values,
@@ -233,6 +251,8 @@ class Preprocess:
                     r["item_correct_percent"].values,
                     r["user_correct_percent"].values,
                     r["current_correct_count"].values,
+                    r["tag_group_one"].values,
+                    r["tag_group_two"].values,
                     r["answerCode"].values, # target 열
                 )
             )
@@ -264,7 +284,9 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
         (test, 
          question, 
          tag, 
-         duration, 
+         duration,
+         startTime,
+         elapsedTime,
          userCategory, 
          testGroupOne, 
          testGroupTwo, 
@@ -278,6 +300,8 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
          item_correct_percent,
          user_correct_percent,
          current_correct_count,
+         tag_group_one,
+         tag_group_two,
          correct
          ) = (
             *row,
@@ -289,7 +313,8 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "tag": torch.tensor(tag + 1, dtype=torch.int),
             "correct": torch.tensor(correct, dtype=torch.int),
             "duration": torch.tensor(duration, dtype=torch.float),
-            # "elapsedTime": torch.tensor(elapsedTime, dtype=torch.float),
+            "startTime": torch.tensor(startTime, dtype=torch.float),
+            "elapsedTime": torch.tensor(elapsedTime, dtype=torch.float),
             # "user_category": torch.tensor(userCategory, dtype=torch.int),
             "test_group_one": torch.tensor(testGroupOne + 1, dtype=torch.int),
             "test_group_two": torch.tensor(testGroupTwo + 1, dtype=torch.int),
@@ -303,6 +328,8 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "item_correct_percent": torch.tensor(item_correct_percent, dtype=torch.float),
             "user_correct_percent": torch.tensor(user_correct_percent, dtype=torch.float),
             "current_correct_count": torch.tensor(current_correct_count, dtype=torch.int),
+            "tag_group_one": torch.tensor(tag_group_one + 1, dtype=torch.int),
+            "tag_group_two": torch.tensor(tag_group_two + 1, dtype=torch.int),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
