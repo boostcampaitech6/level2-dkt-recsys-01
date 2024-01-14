@@ -36,13 +36,13 @@ class ModelBase(nn.Module):
         self.embedding_serial = nn.Embedding(1001, serial_dim)
 
         # Concatentaed Embedding Projection
-        features_len = intd * 4 + test_group_dim * 2 + 1 + serial_dim
+        features_len = intd * 4 + test_group_dim * 2 + 1 + serial_dim + 1
         self.comb_proj = nn.Linear(features_len, hd)
 
         # Fully connected layer
         self.fc = nn.Linear(hd, 1)
     
-    def forward(self, test, question, tag, correct, mask, interaction, duration, test_group_one, test_group_two, serial):
+    def forward(self, test, question, tag, correct, mask, interaction, duration, test_group_one, test_group_two, serial, solved_count):
         # print(test.shape, question.shape, tag.shape, interaction.shape, duration.shape)
         batch_size = interaction.size(0)
         # Embedding
@@ -68,6 +68,7 @@ class ModelBase(nn.Module):
                 embed_test_group_two,
                 # serial.unsqueeze(-1).int(),
                 embed_serial,
+                solved_count.unsqueeze(-1).int(),
                 # embed_user_category,
                 # embed_time
             ],
@@ -98,7 +99,7 @@ class LSTM(ModelBase):
             self.hidden_dim, self.hidden_dim, self.n_layers, batch_first=True
         )
 
-    def forward(self, test, question, tag, correct, mask, interaction, duration, test_group_one, test_group_two, serial):
+    def forward(self, test, question, tag, correct, mask, interaction, duration, test_group_one, test_group_two, serial, solved_count):
         X, batch_size = super().forward(test=test,
                                         question=question,
                                         tag=tag,
@@ -109,6 +110,7 @@ class LSTM(ModelBase):
                                         test_group_one=test_group_one,
                                         test_group_two=test_group_two,
                                         serial=serial,
+                                        solved_count=solved_count,
                                         )
         out, _ = self.lstm(X)
         out = out.contiguous()\
