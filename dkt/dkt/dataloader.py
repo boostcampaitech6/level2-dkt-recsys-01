@@ -131,6 +131,19 @@ class Preprocess:
         # 동일한 과제를 틀렸었으면 다음번엔 맞출 확률이 높을 것
         df['wrong_before'] = df['solved_count'] - df['correct_before']
 
+        ########### 9. 유저별로 이전에 동일한 태그의 문제를 풀었던 횟수를 추가
+        # 동일한 과제를 수행했으면 다음번엔 맞출 확률이 높을 것
+        df['same_tag_solved_count'] = df.groupby(['userID', 'assessmentItemID', 'KnowledgeTag']).cumcount()
+
+        ########### 10. 유저별로 이전에 동일한 태그의 문제를 맞췄던 횟수를 추가
+        # 동일한 과제를 맞췄었으면 다음번엔 맞출 확률이 높을 것
+        # df['same_tag_correct_before'] = df[['userID', 'assessmentItemID', 'answerCode', 'KnowledgeTag']].groupby(['userID', 'assessmentItemID', 'KnowledgeTag'])['answerCode'].cumsum()
+        # df['same_tag_correct_before'] = df['same_tag_correct_before'] - df['answerCode']
+
+        ########### 11. 유저별로 이전에 동일한 태그의 문제를 틀렸던 횟수를 추가
+        # 동일한 과제를 틀렸었으면 다음번엔 맞출 확률이 높을 것
+        # df['same_tag_wrong_before'] = df['same_tag_solved_count'] - df['same_tag_correct_before']
+
         return df
 
     def load_data_from_file(self, file_name: str, is_train: bool = True) -> np.ndarray:
@@ -162,6 +175,7 @@ class Preprocess:
                            "solved_count", 
                            "correct_before",
                            "wrong_before",
+                           "same_tag_solved_count",
                            ]
 
         ####### 1. 테스트별 제한 시간 feature 추가
@@ -184,6 +198,7 @@ class Preprocess:
                     r["solved_count"].values,
                     r["correct_before"].values,
                     r["wrong_before"].values,
+                    r["same_tag_solved_count"].values,
                     r["answerCode"].values, # target 열
                 )
             )
@@ -212,7 +227,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
         row = self.data[index]
         
         # Load from data
-        (test, question, tag, duration, userCategory, testGroupOne, testGroupTwo, serial, solved_count, correct_before, wrong_before, correct) = (
+        (test, question, tag, duration, userCategory, testGroupOne, testGroupTwo, serial, solved_count, correct_before, wrong_before, same_tag_solved_count, correct) = (
             row[0], 
             row[1], 
             row[2], 
@@ -225,6 +240,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             row[9],
             row[10],
             row[11],
+            row[12],
             )
         # print(type(duration), duration)
         data = {
@@ -241,6 +257,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "solved_count": torch.tensor(solved_count, dtype=torch.int),
             "correct_before": torch.tensor(correct_before, dtype=torch.int),
             "wrong_before": torch.tensor(wrong_before, dtype=torch.int),
+            "same_tag_solved_count": torch.tensor(wrong_before, dtype=torch.int),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
