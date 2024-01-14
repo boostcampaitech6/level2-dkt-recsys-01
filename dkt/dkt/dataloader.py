@@ -265,8 +265,8 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "correct_before": torch.tensor(correct_before, dtype=torch.int),
             "wrong_before": torch.tensor(wrong_before, dtype=torch.int),
             "same_tag_solved_count": torch.tensor(same_tag_solved_count, dtype=torch.int),
-            #"same_tag_correct_before": torch.tensor(same_tag_correct_before, dtype=torch.int),
-            #"same_tag_wrong_before": torch.tensor(same_tag_wrong_before, dtype=torch.int),
+            "same_tag_correct_before": torch.tensor(same_tag_correct_before, dtype=torch.int),
+            "same_tag_wrong_before": torch.tensor(same_tag_wrong_before, dtype=torch.int),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
