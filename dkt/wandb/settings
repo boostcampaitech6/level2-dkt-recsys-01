@@ -1,0 +1,5 @@
+[default]
+entity = dkt-recsys1
+project = dkt
+base_url = https://api.wandb.ai
+

@@ -1,0 +1,20 @@
+wandb: Currently logged in as: xbox2537. Use `wandb login --relogin` to force relogin
+/opt/conda/envs/dkt/lib/python3.10/site-packages/torch/cuda/__init__.py:138: UserWarning: CUDA initialization: The NVIDIA driver on your system is too old (found version 11040). Please update your GPU driver by downloading and installing a new version from the URL: http://www.nvidia.com/Download/index.aspx Alternatively, go to: https://pytorch.org to install a PyTorch version that has been compiled with your version of the CUDA driver. (Triggered internally at ../c10/cuda/CUDAFunctions.cpp:108.)
+  return torch._C._cuda_getDeviceCount() > 0
+2024-01-09 10:02:31,747 - root - INFO - Preparing data ...
+Traceback (most recent call last):
+  File "/data/ephemeral/code/dkt/train.py", line 38, in <module>
+    main(args)
+  File "/data/ephemeral/code/dkt/train.py", line 23, in main
+    preprocess.load_train_data(file_name=args.file_name)
+  File "/data/ephemeral/code/dkt/dkt/dataloader.py", line 174, in load_train_data
+    self.train_data = self.load_data_from_file(file_name)
+  File "/data/ephemeral/code/dkt/dkt/dataloader.py", line 157, in load_data_from_file
+    df[columns + one_hot_cats + additional_cols]
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/pandas/core/frame.py", line 3899, in __getitem__
+    indexer = self.columns._get_indexer_strict(key, "columns")[1]
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 6115, in _get_indexer_strict
+    self._raise_if_missing(keyarr, indexer, axis_name)
+  File "/opt/conda/envs/dkt/lib/python3.10/site-packages/pandas/core/indexes/base.py", line 6179, in _raise_if_missing
+    raise KeyError(f"{not_found} not in index")
+KeyError: "['KnowledgeTag'] not in index"
