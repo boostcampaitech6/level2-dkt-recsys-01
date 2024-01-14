@@ -36,7 +36,7 @@ class ModelBase(nn.Module):
         self.embedding_serial = nn.Embedding(1001, serial_dim)
 
         # Concatentaed Embedding Projection
-        features_len = intd * 4 + test_group_dim * 2 + serial_dim + 8
+        features_len = intd * 4 + test_group_dim * 2 + serial_dim + 5
         self.comb_proj = nn.Linear(features_len, hd)
 
         # Fully connected layer
@@ -89,9 +89,9 @@ class ModelBase(nn.Module):
                 solved_count.unsqueeze(-1).int(),
                 correct_before.unsqueeze(-1).int(),
                 wrong_before.unsqueeze(-1).int(),
-                same_tag_solved_count.unsqueeze(-1).int(),
-                same_tag_correct_before.unsqueeze(-1).int(),
-                same_tag_wrong_before.unsqueeze(-1).int(),
+                # same_tag_solved_count.unsqueeze(-1).int(),
+                # same_tag_correct_before.unsqueeze(-1).int(),
+                # same_tag_wrong_before.unsqueeze(-1).int(),
                 item_correct_percent.unsqueeze(-1).float(),
                 # embed_user_category,
                 # embed_time
