@@ -41,7 +41,7 @@ class ModelBase(nn.Module):
         correct_percent_dim = 50
         self.embedding_correct_percent = nn.Linear(2, correct_percent_dim)
 
-        tag_group_dim = 10
+        tag_group_dim = 50
         self.embedding_tag_group_one = nn.Embedding(n_tags * 1000 + 1, tag_group_dim)
         self.embedding_tag_group_two = nn.Embedding(n_tags * 1000 + 1, tag_group_dim)
 
