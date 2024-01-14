@@ -41,13 +41,13 @@ class ModelBase(nn.Module):
         correct_percent_dim = 50
         self.embedding_correct_percent = nn.Linear(2, correct_percent_dim)
 
-        tag_group_dim = 100
+        tag_group_dim = 10
         self.embedding_tag_group_one = nn.Embedding(n_tags * 1000 + 1, tag_group_dim)
         self.embedding_tag_group_two = nn.Embedding(n_tags * 1000 + 1, tag_group_dim)
 
         # Concatentaed Embedding Projection
         features_len = (intd * 4) + (test_group_dim * 2) + serial_dim\
-                      + 6 + correct_percent_dim + (tag_group_dim * 2)
+                      + 3 + (tag_group_dim * 1)
         
         self.comb_proj = nn.Linear(features_len, hd)
 
@@ -118,13 +118,13 @@ class ModelBase(nn.Module):
                 embed_serial,
                 solved_count.unsqueeze(-1).int(),
                 correct_before.unsqueeze(-1).int(),
-                wrong_before.unsqueeze(-1).int(),
-                same_tag_solved_count.unsqueeze(-1).int(),
+                #wrong_before.unsqueeze(-1).int(),
+                #same_tag_solved_count.unsqueeze(-1).int(),
                 # same_tag_correct_before.unsqueeze(-1).int(),
                 # same_tag_wrong_before.unsqueeze(-1).int(),
-                embed_correct_percent,
-                current_correct_count.unsqueeze(-1).int(),
-                embed_tag_group_one,
+                #embed_correct_percent,
+                #current_correct_count.unsqueeze(-1).int(),
+                #embed_tag_group_one,
                 embed_tag_group_two,
             ],
             dim=2,
