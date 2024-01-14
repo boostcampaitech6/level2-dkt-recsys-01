@@ -35,7 +35,7 @@ class ModelBase(nn.Module):
         serial_dim = 100
         self.embedding_serial = nn.Embedding(1001, serial_dim)
 
-        correct_percent_dim = 100
+        correct_percent_dim = 10
         self.embedding_correct_percent = nn.Linear(2, correct_percent_dim)
 
         # Concatentaed Embedding Projection
