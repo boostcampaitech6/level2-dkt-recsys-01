@@ -1,0 +1,33 @@
+# dkt args
+seed: 42                        # int, seed
+device: cpu                     # str, cpu or gpu
+data_dir: /opt/ml/input/data/   # str, data directory
+
+asset_dir: asset/               # str, data directory
+file_name: train_data.csv       # str, train file name
+model_dir: models/              # str, model directory
+model_name: best_model.pt       # str, model file name
+output_dir: outputs/            # str, output directory
+test_file_name: test_data.csv   # str, test file name
+
+max_seq_len: 20                 # int, max sequence length
+num_workers: 1                  # int, number of workers
+
+# model
+hidden_dim: 64                  # int, hidden dimension size
+n_layers: 2                     # int, number of layers
+n_heads: 2                      # int, number of heads
+drop_out: .2                    # float, drop out rate
+
+# training
+n_epochs: 20                    # int, number -f epochs
+batch_size: 64                  # int, batch size
+lr: .0001                       # float, learning rate
+clip_grad: 10                   # int, clip grad
+patience: 5                     # int, for early stopping
+
+log_steps: 50                   # int, print log per n steps
+
+model: lstm                     # str, model type
+optimizer: adam                 # str, optimizer type
+scheduler: plateau              # str, scheduler type
