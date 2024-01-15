@@ -209,3 +209,8 @@ tags
 [._]*.un~
 
 # End of https://www.toptal.com/developers/gitignore/api/python,vim,linux
+
+# additions
+wandb
+models
+asset
