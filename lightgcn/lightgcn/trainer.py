@@ -57,12 +57,13 @@ def run(
         train_auc, train_acc, train_loss = train(train_data=train_data, model=model, optimizer=optimizer)
     
         # VALID
-        auc, acc = validate(valid_data=valid_data, model=model)
+        auc, acc, wandb_cf = validate(valid_data=valid_data, model=model)
         wandb.log(dict(train_loss_epoch=train_loss,
                        train_acc_epoch=train_acc,
                        train_auc_epoch=train_auc,
                        valid_acc_epoch=acc,
-                       valid_auc_epoch=auc))
+                       valid_auc_epoch=auc,
+                       confusion_matrix=wandb_cf))
 
         if auc > best_auc:
             logger.info("Best model updated AUC from %.4f to %.4f", best_auc, auc)
@@ -103,7 +104,12 @@ def validate(valid_data: dict, model: nn.Module):
         acc = accuracy_score(y_true=label, y_pred=prob > 0.5)
         auc = roc_auc_score(y_true=label, y_score=prob)
     logger.info("VALID AUC : %.4f ACC : %.4f", auc, acc)
-    return auc, acc
+
+    wandb_cf = wandb.plot.confusion_matrix(
+            probs=None, y_true=label, preds=prob > 0.5,
+            class_names=['0', '1'])
+
+    return auc, acc, wandb_cf
 
 
 def inference(model: nn.Module, data: dict, output_dir: str):
