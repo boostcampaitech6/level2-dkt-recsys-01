@@ -45,14 +45,15 @@ def run(args,
                                                  scheduler=scheduler, args=args)
 
         # VALID
-        auc, acc = validate(valid_loader=valid_loader, model=model, args=args)
+        auc, acc, wandb_cf = validate(valid_loader=valid_loader, model=model, args=args)
 
         wandb.log(dict(epoch=epoch,
                        train_loss_epoch=train_loss,
                        train_auc_epoch=train_auc,
                        train_acc_epoch=train_acc,
                        valid_auc_epoch=auc,
-                       valid_acc_epoch=acc))
+                       valid_acc_epoch=acc,
+                       confusion_matrix=wandb_cf))
         
         if auc > best_auc:
             best_auc = auc
@@ -140,7 +141,11 @@ def validate(valid_loader: nn.Module, model: nn.Module, args):
     # Train AUC / ACC
     auc, acc = get_metric(targets=total_targets, preds=total_preds)
     logger.info("VALID AUC : %.4f ACC : %.4f", auc, acc)
-    return auc, acc
+    wandb_cf = wandb.plot.confusion_matrix(
+            probs=None, y_true=total_targets, preds=np.where(total_preds >= 0.5, 1, 0),
+            class_names=['0', '1'])
+
+    return auc, acc, wandb_cf
 
 
 def inference(args, test_data: np.ndarray, model: nn.Module) -> None:
