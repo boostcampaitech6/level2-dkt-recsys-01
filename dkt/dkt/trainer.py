@@ -18,7 +18,6 @@ from .utils import get_logger, logging_conf
 
 logger = get_logger(logger_conf=logging_conf)
 
-
 def run(args,
         train_data: np.ndarray,
         valid_data: np.ndarray,
@@ -61,7 +60,7 @@ def run(args,
             save_checkpoint(state={"epoch": epoch + 1,
                                    "state_dict": model_to_save.state_dict()},
                             model_dir=args.model_dir,
-                            model_filename="best_model.pt")
+                            model_filename=f"{model.__class__.__name__}_best_model.pt")
             early_stopping_counter = 0
         else:
             early_stopping_counter += 1
