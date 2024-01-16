@@ -141,7 +141,6 @@ def validate(valid_loader: nn.Module, model: nn.Module, args):
     # Train AUC / ACC
     auc, acc = get_metric(targets=total_targets, preds=total_preds)
     logger.info("VALID AUC : %.4f ACC : %.4f", auc, acc)
-
     wandb_cf = wandb.plot.confusion_matrix(
             probs=None, y_true=total_targets, preds=np.where(total_preds >= 0.5, 1, 0),
             class_names=['0', '1'])
