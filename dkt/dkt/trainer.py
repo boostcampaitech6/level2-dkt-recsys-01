@@ -60,7 +60,7 @@ def run(args,
             save_checkpoint(state={"epoch": epoch + 1,
                                    "state_dict": model_to_save.state_dict()},
                             model_dir=args.model_dir,
-                            model_filename=f"{model.__class__.__name__}_best_model.pt")
+                            model_filename=f"{wandb.run.name}_best_model.pt")
             early_stopping_counter = 0
         else:
             early_stopping_counter += 1
