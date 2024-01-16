@@ -1,4 +1,5 @@
 from auth.client import client
+from data import read_dataframe_with_features
 
 print("##### 3. Execute query")
 QUERY = (
@@ -8,3 +9,7 @@ QUERY = (
 query_job = client.query(QUERY)  # API request
 result = query_job.to_dataframe()  # Waits for query to finish
 print(result.head())
+
+print("read features test")
+data = read_dataframe_with_features('userID','assessmentItemID','testId', 'answerCode', 'Timestamp', 'KnowledgeTag')
+print(data.head())
