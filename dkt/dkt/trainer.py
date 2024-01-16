@@ -228,9 +228,22 @@ def save_checkpoint(state: dict, model_dir: str, model_filename: str) -> None:
     os.makedirs(model_dir, exist_ok=True)
     torch.save(state, save_path)
 
+def find_latest_file(directory_path, prefix):
+    # 디렉토리 내의 파일 목록을 가져옵니다.
+    files = [f for f in os.listdir(directory_path) if f.startswith(prefix) and os.path.isfile(os.path.join(directory_path, f))]
+
+    # 파일들의 수정 시간을 기준으로 정렬합니다.
+    files.sort(key=lambda f: os.path.getmtime(os.path.join(directory_path, f)), reverse=True)
+
+    if files:
+        # 가장 최신 파일의 이름을 반환합니다.
+        return files[0]
+    else:
+        return None
 
 def load_model(args):
-    model_path = os.path.join(args.model_dir, args.model_name)
+    latest_file_name=find_latest_file(args.model_dir, args.model.lower())
+    model_path = os.path.join(args.model_dir, latest_file_name)
     logger.info("Loading Model from: %s", model_path)
     load_state = torch.load(model_path)
     model = get_model(args)
