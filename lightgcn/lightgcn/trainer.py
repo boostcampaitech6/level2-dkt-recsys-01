@@ -58,6 +58,7 @@ def run(
     
         # VALID
         auc, acc, wandb_cf = validate(valid_data=valid_data, model=model)
+        
         wandb.log(dict(train_loss_epoch=train_loss,
                        train_acc_epoch=train_acc,
                        train_auc_epoch=train_auc,
