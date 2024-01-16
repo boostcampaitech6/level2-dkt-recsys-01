@@ -24,12 +24,12 @@ def main(args):
     train_data: np.ndarray = preprocess.get_train_data()
     train_data, valid_data = preprocess.split_data(data=train_data)
 
-    now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    now = datetime.datetime.now().strftime('%Y%m%d%H%M%S') # 현재시간
     
     logger.info("Building Model ...")
     model: torch.nn.Module = trainer.get_model(args=args).to(args.device)
-    # args.model를 썼는데도 계속 LSTM으로 나옴
-    run_name = f'{type(model).__name__}-{now}' # run_name 만들기
+
+    run_name = f'{type(model).__name__.lower()}-{now}' # run_name 만들기
     wandb.init(project="dkt", config=vars(args),name=run_name)
 
     logger.info("Start Training ...")
