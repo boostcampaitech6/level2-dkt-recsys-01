@@ -214,3 +214,5 @@ tags
 wandb
 models
 asset
+
+bigquery/config
