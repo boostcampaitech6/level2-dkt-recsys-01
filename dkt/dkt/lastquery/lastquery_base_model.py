@@ -34,6 +34,7 @@ class LastQueryBase(nn.Module):
         self.n_tests = n_tests
         self.n_questions = n_questions
         self.n_tags = n_tags
+        self.n_heads = n_heads
         self.max_seq_len = max_seq_len
         self.device = device
         
@@ -57,7 +58,7 @@ class LastQueryBase(nn.Module):
         self.key = nn.Linear(in_features=self.hidden_dim, out_features=self.hidden_dim)
         self.value = nn.Linear(in_features=self.hidden_dim, out_features=self.hidden_dim)
 
-        self.attn = nn.MultiheadAttention(embed_dim=self.hidden_dim, num_heads=self.args.n_heads)
+        self.attn = nn.MultiheadAttention(embed_dim=self.hidden_dim, num_heads=self.n_heads)
         self.mask = None # last query에서는 필요가 없지만 수정을 고려하여서 넣어둠
         self.ffn = Feed_Forward_block(self.hidden_dim)
 
