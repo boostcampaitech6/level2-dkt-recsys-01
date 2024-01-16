@@ -104,7 +104,6 @@ def validate(valid_data: dict, model: nn.Module):
         acc = accuracy_score(y_true=label, y_pred=prob > 0.5)
         auc = roc_auc_score(y_true=label, y_score=prob)
     logger.info("VALID AUC : %.4f ACC : %.4f", auc, acc)
-
     wandb_cf = wandb.plot.confusion_matrix(
             probs=None, y_true=label, preds=prob > 0.5,
             class_names=['0', '1'])
