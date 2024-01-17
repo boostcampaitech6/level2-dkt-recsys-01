@@ -48,36 +48,50 @@ def run(args,
                                                  scheduler=scheduler, args=args)
 
         # VALID
-        auc, acc, wandb_cf = validate(valid_loader=valid_loader, model=model, args=args)
+        if not isinstance(valid_data, type(None)):
+            auc, acc, wandb_cf = validate(valid_loader=valid_loader, model=model, args=args)
 
-        wandb.log(dict(epoch=epoch,
-                       train_loss_epoch=train_loss,
-                       train_auc_epoch=train_auc,
-                       train_acc_epoch=train_acc,
-                       valid_auc_epoch=auc,
-                       valid_acc_epoch=acc,
-                       confusion_matrix=wandb_cf))
-        
-        if auc > best_auc:
-            best_auc = auc
+            wandb.log(dict(epoch=epoch,
+                           train_loss_epoch=train_loss,
+                           train_auc_epoch=train_auc,
+                           train_acc_epoch=train_acc,
+                           valid_auc_epoch=auc,
+                           valid_acc_epoch=acc,
+                           confusion_matrix=wandb_cf))
+            
+            if auc > best_auc:
+                best_auc = auc
+                # nn.DataParallel로 감싸진 경우 원래의 model을 가져옵니다.
+                model_to_save = model.module if hasattr(model, "module") else model
+                save_checkpoint(state={"epoch": epoch + 1,
+                                       "state_dict": model_to_save.state_dict()},
+                                model_dir=args.model_dir,
+                                model_filename=f"{run_name}_best_model.pt")
+                early_stopping_counter = 0
+            else:
+                early_stopping_counter += 1
+                if early_stopping_counter >= args.patience:
+                    logger.info(
+                        "EarlyStopping counter: %s out of %s",
+                        early_stopping_counter, args.patience
+                    )
+                    break
+        else:
+            wandb.log(dict(epoch=epoch,
+                           train_loss_epoch=train_loss,
+                           train_auc_epoch=train_auc,
+                           train_acc_epoch=train_acc))
+            
             # nn.DataParallel로 감싸진 경우 원래의 model을 가져옵니다.
             model_to_save = model.module if hasattr(model, "module") else model
             save_checkpoint(state={"epoch": epoch + 1,
                                    "state_dict": model_to_save.state_dict()},
                             model_dir=args.model_dir,
                             model_filename=f"{run_name}_best_model.pt")
-            early_stopping_counter = 0
-        else:
-            early_stopping_counter += 1
-            if early_stopping_counter >= args.patience:
-                logger.info(
-                    "EarlyStopping counter: %s out of %s",
-                    early_stopping_counter, args.patience
-                )
-                break
+
 
         # scheduler
-        if args.scheduler == "plateau":
+        if args.scheduler == "plateau" and not isinstance(valid_data, type(None)):
             scheduler.step(best_auc)
 
 
