@@ -15,7 +15,9 @@ from .lastquery.lastquery_base_model import LastQueryBase
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 from .utils import get_logger, logging_conf
+from .attnlstm.attnlstm import ATTNLSTM
 from .lastquery.lastquery import LastQuery
+
 
 logger = get_logger(logger_conf=logging_conf)
 
@@ -190,6 +192,7 @@ def get_model(args) -> nn.Module:
             "lstm": LSTM,
             "lstmattn": LSTMATTN,
             "bert": BERT,
+            "attnlstm": ATTNLSTM,
             "lastquery": LastQuery,
             "lastquerybase": LastQueryBase
         }.get(model_name)(**model_args)
