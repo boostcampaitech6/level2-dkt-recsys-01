@@ -4,7 +4,7 @@ from easydict import EasyDict
 import numpy as np
 import torch
 import wandb
-
+import datetime
 from dkt import trainer
 from dkt.dataloader import Preprocess
 from dkt.utils import get_logger, set_seeds, logging_conf
@@ -23,13 +23,17 @@ def main(args):
     preprocess.load_train_data(file_name=args.file_name)
     train_data: np.ndarray = preprocess.get_train_data()
     train_data, valid_data = preprocess.split_data(data=train_data)
-    wandb.init(project="dkt", config=vars(args))
+
+    now = datetime.datetime.now().strftime('%Y%m%d%H%M%S') # 현재시간
     
     logger.info("Building Model ...")
     model: torch.nn.Module = trainer.get_model(args=args).to(args.device)
-    
+
+    run_name = f'{type(model).__name__.lower()}-{now}' # run_name 만들기
+    wandb.init(project="dkt", config=vars(args),name=run_name)
+
     logger.info("Start Training ...")
-    trainer.run(args=args, train_data=train_data, valid_data=valid_data, model=model)
+    trainer.run(args=args, train_data=train_data, valid_data=valid_data, model=model,run_name=run_name) #run_name 추가
 
 
 if __name__ == "__main__":
