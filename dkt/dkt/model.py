@@ -249,7 +249,6 @@ class Saint(nn.Module):
         self.pos_encoder = PositionalEncoding(self.hidden_dim, self.dropout, self.args.max_seq_len)
         self.pos_decoder = PositionalEncoding(self.hidden_dim, self.dropout, self.args.max_seq_len)
         
-
         self.transformer = nn.Transformer(
             d_model=self.hidden_dim, 
             nhead=n_heads,

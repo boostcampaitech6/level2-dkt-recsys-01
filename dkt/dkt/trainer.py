@@ -15,8 +15,7 @@ from .model import LSTM, LSTMATTN, BERT, Saint
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 from .utils import get_logger, logging_conf
-from .SaintPlus import SaintPlus
-
+from .saintplus.saintplus import SaintPlus
 
 logger = get_logger(logger_conf=logging_conf)
 
