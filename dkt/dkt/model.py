@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
 from transformers.models.bert.modeling_bert import BertConfig, BertEncoder, BertModel
-
+import math
+import numpy as np
 
 class ModelBase(nn.Module):
     def __init__(
@@ -212,14 +213,15 @@ class PositionalEncoding(nn.Module):
 
 class Saint(nn.Module):
     
-    def __init__(self, args,
+    def __init__(self, 
+                 args,
                  n_tests: int = 1538,
                  n_questions: int = 9455,
                  n_tags: int = 913,
                  n_heads: int = 2,
                  n_layers: int = 2,
                  ):
-        super(Saint, self).__init__()
+        super().__init__()
         self.args = args
         self.device = args.device
 
@@ -265,9 +267,8 @@ class Saint(nn.Module):
         self.enc_dec_mask = None
     
     def get_mask(self, seq_len):
-        mask = torch.from_numpy(np.triu(np.ones((seq_len, seq_len)), k=1))
-
-        return mask.masked_fill(mask==1, float('-inf'))
+        mask = torch.from_numpy(np.triu(np.ones((seq_len, seq_len)), k=1).astype('bool'))
+        return mask
 
     def forward(self, test, question, tag, correct, mask, interaction):
         #test, question, tag, _, mask, interaction, _ = input
@@ -322,10 +323,10 @@ class Saint(nn.Module):
         embed_dec = self.pos_decoder(embed_dec)
         
         out = self.transformer(embed_enc, embed_dec,
-                               #src_mask=self.enc_mask,
-                               #tgt_mask=self.dec_mask,
-                               #memory_mask=self.enc_dec_mask)
-        )
+                               src_mask=self.enc_mask,
+                               tgt_mask=self.dec_mask,
+                               memory_mask=self.enc_dec_mask)
+        
 
         out = out.permute(1, 0, 2)
         out = out.contiguous().view(batch_size, -1, self.hidden_dim)
