@@ -11,6 +11,7 @@ from .criterion import get_criterion
 from .dataloader import get_loaders
 from .metric import get_metric
 from .model import LSTM, LSTMATTN, BERT
+from .lastquery.lastquery_base_model import LastQueryBase
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 from .utils import get_logger, logging_conf
@@ -181,6 +182,7 @@ def get_model(args) -> nn.Module:
         n_heads=args.n_heads,
         drop_out=args.drop_out,
         max_seq_len=args.max_seq_len,
+        device = args.device
     )
     try:
         model_name = args.model.lower()
@@ -188,6 +190,7 @@ def get_model(args) -> nn.Module:
             "lstm": LSTM,
             "lstmattn": LSTMATTN,
             "bert": BERT,
+            "lastquerybase": LastQueryBase,
         }.get(model_name)(**model_args)
     except KeyError:
         logger.warn("No model name %s found", model_name)

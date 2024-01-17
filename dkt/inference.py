@@ -1,11 +1,10 @@
-import os
-import argparse
+import os, yaml
+from easydict import EasyDict
 
 import numpy as np
 import torch
 
 from dkt import trainer
-from dkt.args import parse_args
 from dkt.dataloader import Preprocess
 from dkt.utils import get_logger, logging_conf
 
@@ -13,7 +12,7 @@ from dkt.utils import get_logger, logging_conf
 logger = get_logger(logging_conf)
 
 
-def main(args: argparse.Namespace):
+def main(args):
     args.device = "cuda" if torch.cuda.is_available() else "cpu"
     
     logger.info("Preparing data ...")
@@ -29,6 +28,7 @@ def main(args: argparse.Namespace):
 
 
 if __name__ == "__main__":
-    args = parse_args()
+    with open('dkt/args.yaml') as file:
+        args = EasyDict(yaml.safe_load(file))
     os.makedirs(args.model_dir, exist_ok=True)
     main(args)
