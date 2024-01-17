@@ -117,7 +117,6 @@ class LastQuery(ModelBase):
         ## residual + layer norm
         out = out.permute(1, 0, 2)
 
-        # 왜 임베딩이랑 더해주지 이게 무슨 의미지?? 
         out = embed + out
         out = self.ln1(out)
 
@@ -132,7 +131,6 @@ class LastQuery(ModelBase):
         hidden = self.init_hidden(batch_size)
         out, hidden = self.lstm(out, hidden)
 
-        # 이건 마지막에 다 해주는 과정이고!
         ###################### DNN #####################
         out = out.contiguous().view(batch_size, -1, self.hidden_dim)
         out = self.fc(out).view(batch_size, -1)
