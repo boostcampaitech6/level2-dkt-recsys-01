@@ -1,7 +1,7 @@
 # dkt args
 seed: 42                        # int, seed
 device: cpu                     # str, cpu or gpu
-data_dir: /opt/ml/input/data/   # str, data directory
+data_dir: /data/ephemeral/opt/ml/input/data/   # str, data directory
 
 asset_dir: asset/               # str, data directory
 file_name: train_data.csv       # str, train file name
