@@ -39,6 +39,30 @@ class Preprocess:
         data_2 = data[size:]
         return data_1, data_2
 
+    def kfold_split_data(self,
+                   data: np.ndarray,
+                   fold_num: int = 5,
+                   shuffle: bool = True,
+                   seed: int = 0) -> Tuple[np.ndarray]:
+        """
+        split data into two parts with a given ratio.
+        """
+        if shuffle:
+            random.seed(seed)  # fix to default seed 0
+            random.shuffle(data)
+
+        size = round(len(data)/fold_num)
+
+        splitted = []
+        for cv_info, (sp, ep) in enumerate([(i*size, (i+1)*size) for i in range(fold_num)]):
+            train_data, valid_data = np.concatenate([data[:sp],data[ep:]], axis=0), data[sp:ep]
+            splitted.append([cv_info, train_data, valid_data])
+            print(cv_info, train_data.shape, valid_data.shape)
+
+        splitted.append(['retrain', data, None])
+
+        return splitted 
+
     def __save_labels(self, encoder: LabelEncoder, name: str) -> None:
         le_path = os.path.join(self.args.asset_dir, name + "_classes.npy")
         np.save(le_path, encoder.classes_)
