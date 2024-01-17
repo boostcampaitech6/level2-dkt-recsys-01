@@ -55,7 +55,7 @@ class Encoder_block(nn.Module):
         out = out + in_pos                                      # Applying positional embedding
 
         out = out.permute(1,0,2)                                # (n,b,d)  
-        print('pre multi', out.shape )
+        #print('pre multi', out.shape )
         
         #Multihead attention                            
         n,_,_ = out.shape
@@ -182,8 +182,11 @@ class Saint(ModelBase):
 
         self.out = nn.Linear(in_features= hidden_dim , out_features=1)
     
-    def forward(self,in_ex,  in_in, in_cat):
+    def forward(self, test, question, tag, correct, mask, interaction):
         
+        in_ex = question
+        in_in = correct
+        in_cat = tag
         ## pass through each of the encoder blocks in sequence
         first_block = True
         for x in range(self.num_en):
@@ -202,10 +205,10 @@ class Saint(ModelBase):
 
         ## Output layer
         in_in = torch.sigmoid( self.out( in_in ) )
-        return in_in
+        return in_in.squeeze()
 
 
-## forward prop on dummy data
+# forward prop on dummy data
 
 # seq_len = 100
 # total_ex = 1538
