@@ -50,6 +50,7 @@ def main(args):
 
             logger.info("Start Training ...")
             trainer.run(args=args, train_data=train_data, valid_data=valid_data, model=model,run_name=run_name) #run_name 추가
+            wandb.finish()
 
 
 
