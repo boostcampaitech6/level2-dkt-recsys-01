@@ -210,7 +210,6 @@ def get_model(args) -> nn.Module:
             "lstm": LSTM,
             "lstmattn": LSTMATTN,
             "bert": BERT,
-            "saint": Saint,
             "attnlstm": ATTNLSTM,
             "lastquery": LastQuery,
             "lastquerybase": LastQueryBase
