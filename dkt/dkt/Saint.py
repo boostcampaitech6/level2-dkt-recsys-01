@@ -150,7 +150,55 @@ def get_pos(seq_len):
     # use sine positional embeddinds
     return torch.arange( seq_len ).unsqueeze(0) 
 
-class Saint(ModelBase):
+# class Saint(nn.Module):
+#     def __init__(
+#         self,
+#         hidden_dim,
+#         n_layers=,
+#         n_tests,
+#         n_questions
+#         n_tags,
+#         n_heads,
+#         drop_out,
+#         max_seq_len,
+#      ):
+#         super().__init__( )
+
+#         self.num_en = num_en
+#         self.num_de = num_de
+
+#         self.encoder = get_clones( Encoder_block(dim_model, heads_en , total_ex ,total_cat,seq_len) , num_en)
+#         self.decoder = get_clones( Decoder_block(dim_model ,total_in, heads_de,seq_len)             , num_de)
+
+#         self.out = nn.Linear(in_features= dim_model , out_features=1)
+    
+#     def forward(self,dim_model,num_en, num_de ,heads_en, total_ex ,total_cat,total_in,heads_de,seq_len):
+#         test, question, tag, correct, mask, interaction, _ = input
+#         in_ex = question 
+#         in_cat= tag
+#         in_in = correct
+#         ## pass through each of the encoder blocks in sequence
+#         first_block = True
+#         for x in range(self.num_en):
+#             if x>=1:
+#                 first_block = False
+#             in_ex = self.encoder[x]( in_ex, in_cat ,first_block=first_block)
+#             in_cat = in_ex                                  # passing same output as q,k,v to next encoder block
+
+        
+#         ## pass through each decoder blocks in sequence
+#         first_block = True
+#         for x in range(self.num_de):
+#             if x>=1:
+#                 first_block = False
+#             in_in = self.decoder[x]( in_in , en_out= in_ex, first_block=first_block )
+
+#         ## Output layer
+#         #in_in = torch.sigmoid( )
+#         return self.out( in_in )
+
+
+class Saint(nn.Module):
     def __init__(
         self,
         hidden_dim: int = 64,
@@ -163,13 +211,7 @@ class Saint(ModelBase):
         seq_len: float = 20,
         **kwargs
     ):
-        super().__init__(
-            hidden_dim,
-            n_layers,
-            n_tests,
-            n_questions,
-            n_tags
-        )
+        super().__init__()
         self.n_heads = n_heads
         self.drop_out = drop_out
 
@@ -183,9 +225,9 @@ class Saint(ModelBase):
         self.out = nn.Linear(in_features= hidden_dim , out_features=1)
     
     def forward(self, test, question, tag, correct, mask, interaction):
-        
-        in_ex = question
-        in_in = correct
+        #print(question.shape, correct.shape, tag.shape)
+        in_ex = test
+        in_in = question
         in_cat = tag
         ## pass through each of the encoder blocks in sequence
         first_block = True
@@ -203,9 +245,7 @@ class Saint(ModelBase):
                 first_block = False
             in_in = self.decoder[x]( in_in , en_out= in_ex, first_block=first_block )
 
-        ## Output layer
-        in_in = torch.sigmoid( self.out( in_in ) )
-        return in_in.squeeze()
+        return self.out( in_in ).squeeze()
 
 
 # forward prop on dummy data

@@ -185,10 +185,10 @@ def get_model(args) -> nn.Module:
     try:
         model_name = args.model.lower()
         model = {
-            "lstm": LSTM,
-            "lstmattn": LSTMATTN,
-            "bert": BERT,
-            "saint": Saint,
+        "lstm": LSTM,
+        "lstmattn": LSTMATTN,
+        "bert": BERT,
+        "saint": Saint,
         }.get(model_name)(**model_args)
     except KeyError:
         logger.warn("No model name %s found", model_name)
