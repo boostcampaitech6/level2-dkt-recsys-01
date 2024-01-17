@@ -57,8 +57,6 @@ class Preprocess:
         for cv_info, (sp, ep) in enumerate([(i*size, (i+1)*size) for i in range(fold_num)]):
             train_data, valid_data = np.concatenate([data[:sp],data[ep:]], axis=0), data[sp:ep]
             splitted.append([cv_info, train_data, valid_data])
-            print(cv_info, train_data.shape, valid_data.shape)
-
         splitted.append(['retrain', data, None])
 
         return splitted 
