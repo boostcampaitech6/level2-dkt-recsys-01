@@ -10,14 +10,12 @@ import wandb
 from .criterion import get_criterion
 from .dataloader import get_loaders
 from .metric import get_metric
-from .model import LSTM, LSTMATTN, BERT
-from .lastquery.lastquery_base_model import LastQueryBase
+
+from .model import LSTM, LSTMATTN, BERT, Saint
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 from .utils import get_logger, logging_conf
-from .Saint import Saint
-from .attnlstm.attnlstm import ATTNLSTM
-from .lastquery.lastquery import LastQuery
+from .SaintPlus import SaintPlus
 
 
 logger = get_logger(logger_conf=logging_conf)
@@ -203,6 +201,12 @@ def get_model(args) -> nn.Module:
     )
     try:
         model_name = args.model.lower()
+        if model_name == 'saint':
+            model=Saint(args)
+            return model 
+        if model_name == "saintplus":
+            model=SaintPlus(args)
+            return model
         model = {
             "lstm": LSTM,
             "lstmattn": LSTMATTN,
