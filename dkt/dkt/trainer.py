@@ -207,13 +207,10 @@ def get_model(args) -> nn.Module:
             "lstm": LSTM,
             "lstmattn": LSTMATTN,
             "bert": BERT,
-<<<<<<< HEAD
             "saint": Saint,
-=======
             "attnlstm": ATTNLSTM,
             "lastquery": LastQuery,
             "lastquerybase": LastQueryBase
->>>>>>> bda44a4c253fc6f0a290ba71f60ea93b0b4b5400
         }.get(model_name)(**model_args)
     except KeyError:
         logger.warn("No model name %s found", model_name)
