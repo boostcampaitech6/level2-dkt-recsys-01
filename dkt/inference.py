@@ -21,10 +21,10 @@ def main(args):
     test_data: np.ndarray = preprocess.get_test_data()
     
     logger.info("Loading Model ...")
-    model: torch.nn.Module = trainer.load_model(args=args).to(args.device)
+    model, run_name: torch.nn.Module = trainer.load_model(args=args).to(args.device)
     
     logger.info("Make Predictions & Save Submission ...")
-    trainer.inference(args=args, test_data=test_data, model=model)
+    trainer.inference(args=args, test_data=test_data, model=model, run_name=run_name)
 
 
 if __name__ == "__main__":
