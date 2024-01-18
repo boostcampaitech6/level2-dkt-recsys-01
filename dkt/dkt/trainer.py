@@ -286,5 +286,5 @@ def load_model(args):
     # load model state
     model.load_state_dict(load_state["state_dict"], strict=True)
     logger.info("Successfully loaded model state from: %s", model_path)
-    
-    return model, latest_file_name[:-3]
+
+    return model, latest_file_name[:-13]
