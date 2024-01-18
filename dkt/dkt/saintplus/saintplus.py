@@ -55,7 +55,6 @@ class SaintPlus(nn.Module):
         embed_question = self.embedding_question(question.int())
         embed_tag = self.embedding_tag(tag.int())
 
-
         embed = torch.cat(
             [
                 embed_interaction,

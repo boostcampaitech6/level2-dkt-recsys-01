@@ -21,7 +21,7 @@ def main(args):
     test_data: np.ndarray = preprocess.get_test_data()
     
     logger.info("Loading Model ...")
-    model, run_name = trainer.load_model(args=args)#.to(args.device)
+    model, run_name = trainer.load_model(args=args)  #.to(args.device)
     model = model.to(args.device)
     
     logger.info("Make Predictions & Save Submission ...")

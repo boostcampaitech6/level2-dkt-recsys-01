@@ -326,7 +326,6 @@ class Saint(nn.Module):
                                tgt_mask=self.dec_mask,
                                memory_mask=self.enc_dec_mask)
         
-
         out = out.permute(1, 0, 2)
         out = out.contiguous().view(batch_size, -1, self.hidden_dim)
         out = self.fc(out)
