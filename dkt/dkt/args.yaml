@@ -2,7 +2,7 @@
 seed: 42                        # int, seed
 device: cpu                     # str, cpu or gpu
 
-data_dir: /data/ephemeral/opt/ml/input/data/   # str, data directory
+data_dir: opt/ml/input/data/   # str, data directory
 cv: 1                           # int, 0 or 1
 fold_num: 5                     # int, 3,5,10 normal, not valid when cv == 0
 
