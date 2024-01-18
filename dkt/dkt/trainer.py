@@ -10,14 +10,14 @@ import wandb
 from .criterion import get_criterion
 from .dataloader import get_loaders
 from .metric import get_metric
-from .model import LSTM, LSTMATTN, BERT
-from .lastquery.lastquery_base_model import LastQueryBase
+
+from .model import LSTM, LSTMATTN, BERT, Saint
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 from .utils import get_logger, logging_conf
 from .attnlstm.attnlstm import ATTNLSTM
 from .lastquery.lastquery import LastQuery
-
+from .lastquery.lastquery_base_model import LastQueryBase
 
 logger = get_logger(logger_conf=logging_conf)
 
@@ -165,7 +165,7 @@ def validate(valid_loader: nn.Module, model: nn.Module, args):
     return auc, acc, wandb_cf
 
 
-def inference(args, test_data: np.ndarray, model: nn.Module) -> None:
+def inference(args, test_data: np.ndarray, model: nn.Module, run_name) -> None:
     model.eval()
     _, test_loader = get_loaders(args=args, train=None, valid=test_data)
 
@@ -179,7 +179,7 @@ def inference(args, test_data: np.ndarray, model: nn.Module) -> None:
         preds = preds.cpu().detach().numpy()
         total_preds += list(preds)
 
-    write_path = os.path.join(args.output_dir, "submission.csv")
+    write_path = os.path.join(args.output_dir, f"{run_name}_submission.csv")
     os.makedirs(name=args.output_dir, exist_ok=True)
     with open(write_path, "w", encoding="utf8") as w:
         w.write("id,prediction\n")
@@ -202,13 +202,20 @@ def get_model(args) -> nn.Module:
     )
     try:
         model_name = args.model.lower()
+
+        if model_name == 'saint':
+            model = {
+                'saint':Saint,
+            }.get(model_name)(args)
+            return model
+        
         model = {
             "lstm": LSTM,
             "lstmattn": LSTMATTN,
             "bert": BERT,
             "attnlstm": ATTNLSTM,
             "lastquery": LastQuery,
-            "lastquerybase": LastQueryBase
+            "lastquerybase": LastQueryBase,
         }.get(model_name)(**model_args)
     except KeyError:
         logger.warn("No model name %s found", model_name)
@@ -277,4 +284,5 @@ def load_model(args):
     # load model state
     model.load_state_dict(load_state["state_dict"], strict=True)
     logger.info("Successfully loaded model state from: %s", model_path)
-    return model
+
+    return model, latest_file_name[:-13]
