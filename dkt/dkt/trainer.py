@@ -16,6 +16,9 @@ from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 from .utils import get_logger, logging_conf
 from .saintplus.saintplus import SaintPlus
+from .attnlstm.attnlstm import ATTNLSTM
+from .lastquery.lastquery import LastQuery
+from .lastquery.lastquery_base_model import LastQueryBase
 
 logger = get_logger(logger_conf=logging_conf)
 
@@ -200,19 +203,21 @@ def get_model(args) -> nn.Module:
     )
     try:
         model_name = args.model.lower()
-        if model_name == 'saint':
-            model=Saint(args)
-            return model 
-        if model_name == "saintplus":
-            model=SaintPlus(args)
+
+        if model_name in ['saint', 'saintplus']:
+            model = {
+                'saint':Saint,
+                'saintplus':SaintPlus
+            }.get(model_name)(args)
             return model
+        
         model = {
             "lstm": LSTM,
             "lstmattn": LSTMATTN,
             "bert": BERT,
             "attnlstm": ATTNLSTM,
             "lastquery": LastQuery,
-            "lastquerybase": LastQueryBase
+            "lastquerybase": LastQueryBase,
         }.get(model_name)(**model_args)
     except KeyError:
         logger.warn("No model name %s found", model_name)
