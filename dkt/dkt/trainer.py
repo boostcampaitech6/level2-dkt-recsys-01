@@ -15,7 +15,6 @@ from .model import LSTM, LSTMATTN, BERT, Saint
 from .optimizer import get_optimizer
 from .scheduler import get_scheduler
 from .utils import get_logger, logging_conf
-from .saintplus.saintplus import SaintPlus
 from .attnlstm.attnlstm import ATTNLSTM
 from .lastquery.lastquery import LastQuery
 from .lastquery.lastquery_base_model import LastQueryBase
@@ -204,10 +203,9 @@ def get_model(args) -> nn.Module:
     try:
         model_name = args.model.lower()
 
-        if model_name in ['saint', 'saintplus']:
+        if model_name == 'saint':
             model = {
                 'saint':Saint,
-                'saintplus':SaintPlus
             }.get(model_name)(args)
             return model
         
