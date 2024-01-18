@@ -174,13 +174,48 @@ class Preprocess:
         # user_info = user_info - df['answerCode']
         df['current_correct_count'] = user_info
         df['current_correct_count'] = df['current_correct_count'] - df['answerCode']
-        
+
         ########### 15. 태그와 테스트 그룹간에 관계가 있지 않을까
         #테스트 그룹을 포함시켰을때 성능이 올라갔는데, 테스트 그룹이 난이도를 나타낸다면,
         #문제 유형으로 예상되는 태그와 연결시켰을때 얻을 수 있는 정보가 생기기 않을까
         df['tag_group_one'] = df['KnowledgeTag'].astype(str) + df['test_group_one'].astype(str)
         df['tag_group_two'] = df['KnowledgeTag'].astype(str) + df['test_group_two'].astype(str)
-        
+
+        ########### 16. 문제 푸는 데 걸린 시간
+        df['time_for_solve'] = pd.to_datetime(df['Timestamp'].shift(1)) - pd.to_datetime(df['Timestamp'])
+        df['time_for_solve'] = df['time_for_solve'].dt.total_seconds()
+        df['time_for_solve'] = df['time_for_solve'].fillna(-1)
+
+        ########### 17. 찍기 의심 대상
+        #time_for_solve 기준 하위 5% 이하인 경우 찍었을 확률이 높다고 판단
+        threshold_value = np.percentile(df['time_for_solve'], 5)
+        df['guess_yn'] = df['time_for_solve'].apply(lambda x: 'y' if x < threshold_value else 'n')
+
+        ########### 18. 유저별 찍는 비율
+        guess_yn_per = df[['userID', 'guess_yn']].groupby('userID').agg({'guess_yn': lambda x: (x == 'y').mean()})
+        df.merge(guess_yn_per, how='left', on='userID')
+
+        ########### 19. 테스트별 찍는 비율
+        guess_yn_per = df[['testId', 'guess_yn']].groupby('testId').agg({'guess_yn': lambda x: (x == 'y').mean()})
+        df.merge(guess_yn_per, how='left', on='testId')
+
+        ########### 20. 순번별 찍는 비율
+        guess_yn_per = df[['serial', 'guess_yn']].groupby('serial').agg({'guess_yn': lambda x: (x == 'y').mean()})
+        df.merge(guess_yn_per, how='left', on='serial')
+
+        ########### 22. 과제별 찍는 비율
+        guess_yn_per = df[['assessmentItemID', 'guess_yn']].groupby('assessmentItemID').agg({'guess_yn': lambda x: (x == 'y').mean()})
+        df.merge(guess_yn_per, how='left', on='assessmentItemID')
+
+        ########### 23. 태그별 찍는 비율
+        guess_yn_per = df[['KnowledgeTag', 'guess_yn']].groupby('KnowledgeTag').agg({'guess_yn': lambda x: (x == 'y').mean()})
+        df.merge(guess_yn_per, how='left', on='KnowledgeTag')
+
+        ########### 24. 요일별 찍는 비율
+        df['day_of_week'] = df['Timestamp'].dt.dayofweek
+        guess_yn_per = df[['day_of_week', 'guess_yn']].groupby('day_of_week').agg({'guess_yn': lambda x: (x == 'y').mean()})
+        df.merge(guess_yn_per, how='left', on='day_of_week')
+
         return df
 
     def load_data_from_file(self, file_name: str, is_train: bool = True) -> np.ndarray:
@@ -281,20 +316,20 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
         row = self.data[index]
         
         # Load from data
-        (test, 
-         question, 
-         tag, 
+        (test,
+         question,
+         tag,
          duration,
          startTime,
          elapsedTime,
-         userCategory, 
-         testGroupOne, 
-         testGroupTwo, 
-         serial, 
-         solved_count, 
-         correct_before, 
-         wrong_before, 
-         same_tag_solved_count, 
+         userCategory,
+         testGroupOne,
+         testGroupTwo,
+         serial,
+         solved_count,
+         correct_before,
+         wrong_before,
+         same_tag_solved_count,
          same_tag_correct_before,
          same_tag_wrong_before,
          item_correct_percent,
