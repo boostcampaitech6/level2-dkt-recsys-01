@@ -45,9 +45,11 @@ class ModelBase(nn.Module):
         self.embedding_tag_group_one = nn.Embedding(n_tags * 1000 + 1, tag_group_dim)
         self.embedding_tag_group_two = nn.Embedding(n_tags * 1000 + 1, tag_group_dim)
 
+        guess_dim = 10
+        self.embedding_guess = nn.Embedding(3, guess_dim)
+
         # Concatentaed Embedding Projection
-        features_len = (intd * 4) + (test_group_dim * 2) + serial_dim\
-                      + 3 + (tag_group_dim * 1)
+        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 1 + guess_dim
         
         self.comb_proj = nn.Linear(features_len, hd)
 
@@ -78,6 +80,21 @@ class ModelBase(nn.Module):
                 current_correct_count,
                 tag_group_one,
                 tag_group_two,
+                time_for_solve,
+                guess_yn,
+                guess_yn_user,
+                guess_yn_test,
+                guess_yn_serial,
+                guess_yn_assessment,
+                guess_yn_tag,
+                guess_yn_day,
+                guess_yn_group_one,
+                guess_yn_group_two,
+                correct_percent_group_one,
+                correct_percent_group_two,
+                correct_percent_serial,
+                day_of_week,
+                duration_user,
                 ):
         # print(test.shape, question.shape, tag.shape, interaction.shape, duration.shape)
         batch_size = interaction.size(0)
@@ -86,23 +103,15 @@ class ModelBase(nn.Module):
         embed_test = self.embedding_test(test.int())
         embed_question = self.embedding_question(question.int())
         embed_tag = self.embedding_tag(tag.int())
-        # embed_duration = self.embedding_duration(duration.unsqueeze(-1).float())
-        # embed_user_category = self.embedding_user_category(user_category.unsqueeze(-1).float())
         embed_test_group_one = self.embedding_test_group_one(test_group_one.int())
         embed_test_group_two = self.embedding_test_group_one(test_group_two.int())
         embed_serial = self.embedding_serial(serial.int())
-        embed_correct_percent = self.embedding_correct_percent(torch.concat([
-            item_correct_percent.unsqueeze(-1).float(), 
-            user_correct_percent.unsqueeze(-1).float(),
-            ], dim=2))
-        embed_time = self.embedding_time(torch.concat([
-            duration.unsqueeze(-1).float(),
-            elapsedTime.unsqueeze(-1).float(),
-            ], dim=2))
+
         embed_tag_group_one = self.embedding_tag_group_one(tag_group_one.int())
         embed_tag_group_two = self.embedding_tag_group_two(tag_group_two.int())
 
-        # print(embed_tag.shape, embed_duration.shape)
+        embed_guess = self.embedding_guess(guess_yn.int())
+
         embed = torch.cat(
             [
                 embed_interaction,
@@ -110,14 +119,12 @@ class ModelBase(nn.Module):
                 embed_question,
                 embed_tag,
                 duration.unsqueeze(-1).float(),
-                # elapsedTime.unsqueeze(-1).float(),
-                # embed_time,
                 embed_test_group_one,
                 embed_test_group_two,
                 # serial.unsqueeze(-1).int(),
                 embed_serial,
-                solved_count.unsqueeze(-1).int(),
-                correct_before.unsqueeze(-1).int(),
+                # solved_count.unsqueeze(-1).int(),
+                # correct_before.unsqueeze(-1).int(),
                 #wrong_before.unsqueeze(-1).int(),
                 #same_tag_solved_count.unsqueeze(-1).int(),
                 # same_tag_correct_before.unsqueeze(-1).int(),
@@ -126,6 +133,17 @@ class ModelBase(nn.Module):
                 #current_correct_count.unsqueeze(-1).int(),
                 #embed_tag_group_one,
                 embed_tag_group_two,
+                time_for_solve.unsqueeze(-1).int(),
+                embed_guess,
+                # guess_yn_user.unsqueeze(-1).int(),
+                # guess_yn_test.unsqueeze(-1).int(),
+                # guess_yn_serial.unsqueeze(-1).int(),
+                # guess_yn_assessment.unsqueeze(-1).int(),
+                # guess_yn_tag.unsqueeze(-1).int(),
+                # guess_yn_day.unsqueeze(-1).int(),
+                # guess_yn_group_one.unsqueeze(-1).int(),
+                # guess_yn_group_two.unsqueeze(-1).int(),
+                # day_of_week.unsqueeze(-1).int(),
             ],
             dim=2,
         )
@@ -156,9 +174,10 @@ class LSTM(ModelBase):
 
     def forward(self, 
                 test, 
+                # assessmentItemID,
                 question, 
                 tag, 
-                correct, 
+                correct,
                 mask, 
                 interaction,
                 duration,
@@ -178,8 +197,24 @@ class LSTM(ModelBase):
                 current_correct_count,
                 tag_group_one,
                 tag_group_two,
+                time_for_solve,
+                guess_yn,
+                guess_yn_user,
+                guess_yn_test,
+                guess_yn_serial,
+                guess_yn_assessment,
+                guess_yn_tag,
+                guess_yn_day,
+                guess_yn_group_one,
+                guess_yn_group_two,
+                correct_percent_group_one,
+                correct_percent_group_two,
+                correct_percent_serial,
+                day_of_week,
+                duration_user,
                 ):
         X, batch_size = super().forward(test=test,
+                                        # assessmentItemID=assessmentItemID,
                                         question=question,
                                         tag=tag,
                                         correct=correct,
@@ -202,6 +237,21 @@ class LSTM(ModelBase):
                                         current_correct_count=current_correct_count,
                                         tag_group_one=tag_group_one,
                                         tag_group_two=tag_group_two,
+                                        time_for_solve=time_for_solve,
+                                        guess_yn=guess_yn,
+                                        guess_yn_user=guess_yn_user,
+                                        guess_yn_test=guess_yn_test,
+                                        guess_yn_serial=guess_yn_serial,
+                                        guess_yn_assessment=guess_yn_assessment,
+                                        guess_yn_tag=guess_yn_tag,
+                                        guess_yn_day=guess_yn_day,
+                                        guess_yn_group_one=guess_yn_group_one,
+                                        guess_yn_group_two=guess_yn_group_two,
+                                        correct_percent_group_one=correct_percent_group_one,
+                                        correct_percent_group_two=correct_percent_group_two,
+                                        correct_percent_serial=correct_percent_serial,
+                                        day_of_week=day_of_week,
+                                        duration_user=duration_user,
                                         )
         out, _ = self.lstm(X)
         out = out.contiguous()\

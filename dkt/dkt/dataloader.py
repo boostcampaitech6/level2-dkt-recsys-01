@@ -52,6 +52,7 @@ class Preprocess:
             "test_group_two",
             "tag_group_one",
             "tag_group_two",
+            "guess_yn",
             ]
 
         if not os.path.exists(self.args.asset_dir):
@@ -88,7 +89,10 @@ class Preprocess:
         return df
 
     def __feature_engineering(self, df: pd.DataFrame) -> pd.DataFrame:
-        # TODO: Fill in if needed
+        # TODO: Fill in if needed        
+
+        ############ 0. sort by userID, Timestamp
+        df = df.sort_values(by=["userID", "Timestamp"], axis=0) # 유저별로 문제 풀기 시작한 시간순으로 정렬
 
         ############ 1. testId 별로 중간값을 테스트 시간으로 추가해줌
         # 테스트에 제한시간이 있진 않을까 싶어 테스트별 유저의 풀이시간을 기준으로 중간값 채택함
@@ -98,9 +102,9 @@ class Preprocess:
         user_test_duration = user_test_timestamp.groupby(['testId', 'userID'])['Timestamp']\
             .agg(lambda x: (x.max() - x.min()).total_seconds()).reset_index()
         user_test_duration.columns = ['testId', 'userID', 'duration']
-        duration_per_test = user_test_duration.groupby('testId').agg({'duration': lambda x: x.median()})
-        df = df.merge(duration_per_test, how='left', on='testId')
-        del duration_per_test
+        duration_per_test = user_test_duration.groupby('testId').agg({'duration': lambda x: x.median()})['duration'].to_dict()
+        df['duration'] = df['testId'].map(duration_per_test)
+        print(">> feature 1 complete")
 
         ########### 2. testId 별로 순번에 따라 시험시작시간과 경과시간을 추가
         # 제한시간이 있다면, 현재까지 사용한 시간이 중요하지 않을까
@@ -109,6 +113,7 @@ class Preprocess:
         df['userID_testId'] = list(zip(df['userID'], df['testId']))
         df['startTime'] = df['userID_testId'].map(start_time)
         df['elapsedTime'] = (pd.to_datetime(df['Timestamp']) - pd.to_datetime(df['startTime'])).dt.total_seconds()
+        print(">> feature 2 complete")
 
         ########### 3. testId, 일자별로 user를 그룹화한 값을 추가
         # 단체 응시 같은 유형이 있으면, 같은 시험을 비슷한 시간대에 응시하지 않았을까
@@ -116,57 +121,64 @@ class Preprocess:
         timestamp = pd.to_datetime(df['Timestamp'])
         df['day'] = timestamp.dt.date
         df['user_category'] = df[['userID', 'testId', 'day']].groupby(['day', 'testId']).ngroup()
+        print(">> feature 3 complete")
 
         ########### 4. testID를 자른 값을 추가
         # testID값을 분리한 값을 추가
         df['test_group_one'] = df['testId'].apply(lambda x: int(x[1:4]))
         df['test_group_two'] = df['testId'].apply(lambda x: int(x[-3:]))
+        print(">> feature 4 complete")
 
         ########### 5. itemID에서 순번을 자른 값을 추가
         # 과제의 순번이 영향이 있지 않을까
         df['serial'] = df['assessmentItemID'].apply(lambda x: int(x[-3:]))
+        print(">> feature 5 complete")
 
         ########### 6. 유저별로 이전에 동일한 문제를 풀었던 횟수를 추가
         # 동일한 과제를 수행했으면 다음번엔 맞출 확률이 높을 것
         df['solved_count'] = df.groupby(['userID', 'assessmentItemID']).cumcount()
+        print(">> feature 6 complete")
 
         ########### 7. 유저별로 이전에 동일한 문제를 맞췄던 횟수를 추가
         # 동일한 과제를 맞췄었으면 다음번엔 맞출 확률이 높을 것
         df['correct_before'] = df[['userID', 'assessmentItemID', 'answerCode']].groupby(['userID', 'assessmentItemID'])['answerCode'].cumsum()
         df['correct_before'] = df['correct_before'] - df['answerCode']
+        print(">> feature 7 complete")
 
         ########### 8. 유저별로 이전에 동일한 문제를 틀렸던 횟수를 추가
         # 동일한 과제를 틀렸었으면 다음번엔 맞출 확률이 높을 것
         df['wrong_before'] = df['solved_count'] - df['correct_before']
+        print(">> feature 8 complete")
 
         ########### 9. 유저별로 이전에 동일한 태그의 문제를 풀었던 횟수를 추가
         # 동일한 과제를 수행했으면 다음번엔 맞출 확률이 높을 것
         df['same_tag_solved_count'] = df.groupby(['userID', 'assessmentItemID', 'KnowledgeTag']).cumcount()
+        print(">> feature 9 complete")
 
         ########### 10. 유저별로 이전에 동일한 태그의 문제를 맞췄던 횟수를 추가
         # 동일한 과제를 맞췄었으면 다음번엔 맞출 확률이 높을 것
         df['same_tag_correct_before'] = df[['userID', 'assessmentItemID', 'answerCode', 'KnowledgeTag']].groupby(['userID', 'assessmentItemID', 'KnowledgeTag'])['answerCode'].cumsum()
         df['same_tag_correct_before'] = df['same_tag_correct_before'] - df['answerCode']
+        print(">> feature 10 complete")
 
         ########### 11. 유저별로 이전에 동일한 태그의 문제를 틀렸던 횟수를 추가
         #동일한 과제를 틀렸었으면 다음번엔 맞출 확률이 높을 것
         df['same_tag_wrong_before'] = df['same_tag_solved_count'] - df['same_tag_correct_before']
+        print(">> feature 11 complete")
 
         ########### 12. 과제별 정답률을 추가
         #과제의 정답률을 추가하면 과제의 수준을 알 수 있어 좋을 것이다.
-        item_info = df[['assessmentItemID', 'answerCode']].groupby(['assessmentItemID']).agg({'answerCode':['sum', 'count']})
-        item_info['correct_percent'] = item_info[('answerCode', 'sum')] / item_info[('answerCode', 'count')]
-        item_percent = item_info['correct_percent'].to_dict()
-        df['item_correct_percent'] = df['assessmentItemID'].map(item_percent)
+        item_info = df[['assessmentItemID', 'answerCode']].groupby(['assessmentItemID']).agg({'answerCode':'mean'})['answerCode'].to_dict()
+        df['item_correct_percent'] = df['assessmentItemID'].map(item_info)
         del item_info
+        print(">> feature 12 complete")
 
         ########### 13. 유저별 정답률을 추가
         #유저의 정답률을 추가하면 유저의 수준을 알 수 있어 좋을 것이다.
-        user_info = df[['userID', 'answerCode']].groupby(['userID']).agg({'answerCode':['sum', 'count']})
-        user_info['correct_percent'] = user_info[('answerCode', 'sum')] / user_info[('answerCode', 'count')]
-        user_percent = user_info['correct_percent'].to_dict()
-        df['user_correct_percent'] = df['userID'].map(user_percent)
+        user_info = df[['userID', 'answerCode']].groupby(['userID']).agg({'answerCode':'mean'})['answerCode'].to_dict()
+        df['user_correct_percent'] = df['userID'].map(user_info)
         del user_info
+        print(">> feature 13 complete")
 
         ########### 14. 현재까지 맞춘 과제 수
         #현재까지 맞춘 수를 알면 해당 문제를 푸는 시점까지의 유저 상태를 알 수 있을 것이다.
@@ -174,48 +186,131 @@ class Preprocess:
         # user_info = user_info - df['answerCode']
         df['current_correct_count'] = user_info
         df['current_correct_count'] = df['current_correct_count'] - df['answerCode']
+        print(">> feature 14 complete")
 
         ########### 15. 태그와 테스트 그룹간에 관계가 있지 않을까
         #테스트 그룹을 포함시켰을때 성능이 올라갔는데, 테스트 그룹이 난이도를 나타낸다면,
         #문제 유형으로 예상되는 태그와 연결시켰을때 얻을 수 있는 정보가 생기기 않을까
         df['tag_group_one'] = df['KnowledgeTag'].astype(str) + df['test_group_one'].astype(str)
         df['tag_group_two'] = df['KnowledgeTag'].astype(str) + df['test_group_two'].astype(str)
+        print(">> feature 15 complete")
 
         ########### 16. 문제 푸는 데 걸린 시간
-        df['time_for_solve'] = pd.to_datetime(df['Timestamp'].shift(1)) - pd.to_datetime(df['Timestamp'])
-        df['time_for_solve'] = df['time_for_solve'].dt.total_seconds()
-        df['time_for_solve'] = df['time_for_solve'].fillna(-1)
+        # to datetime
+        data = pd.to_datetime(df['Timestamp'])
+
+        # get consuming time to deal with the problem
+        df['timediff'] = (data.shift(1) - data).dt.seconds
+
+        # get the last item of the users
+        df['next_userID'] = df.userID.shift(-1)
+        last_appearances = df.apply(lambda x: True if x['userID']!=x['next_userID'] else False, axis=1)
+        df.loc[last_appearances, 'timediff'] = np.nan
+
+        # get to know last item of the tests
+        df['next_testId'] = df.testId.shift(-1)
+        last_appearances = df.apply(lambda x: True if x['testId']!=x['next_testId'] else False, axis=1)
+        df.loc[last_appearances, 'timediff'] = np.nan
+
+        # 1시간이 넘게 걸리면 문제가 있다고 본다.
+        df.loc[df.timediff > 3600, 'time_for_solve'] = np.nan
+        df['time_for_solve'] = 0
+        print(">> feature 16 complete")
 
         ########### 17. 찍기 의심 대상
         #time_for_solve 기준 하위 5% 이하인 경우 찍었을 확률이 높다고 판단
         threshold_value = np.percentile(df['time_for_solve'], 5)
         df['guess_yn'] = df['time_for_solve'].apply(lambda x: 'y' if x < threshold_value else 'n')
+        print(">> feature 17 complete")
 
         ########### 18. 유저별 찍는 비율
-        guess_yn_per = df[['userID', 'guess_yn']].groupby('userID').agg({'guess_yn': lambda x: (x == 'y').mean()})
-        df.merge(guess_yn_per, how='left', on='userID')
+        guess_yn_per = df[['userID', 'guess_yn']].groupby('userID').agg(guess_yn_user=('guess_yn', lambda x: (x == 'y').mean()))
+        df = df.merge(guess_yn_per, how='left', on='userID')
+        print(">> feature 18 complete")
 
         ########### 19. 테스트별 찍는 비율
-        guess_yn_per = df[['testId', 'guess_yn']].groupby('testId').agg({'guess_yn': lambda x: (x == 'y').mean()})
-        df.merge(guess_yn_per, how='left', on='testId')
+        guess_yn_per = df[['testId', 'guess_yn']].groupby('testId').agg(guess_yn_test=('guess_yn', lambda x: (x == 'y').mean()))
+        df = df.merge(guess_yn_per, how='left', on='testId')
+        print(">> feature 19 complete")
 
         ########### 20. 순번별 찍는 비율
-        guess_yn_per = df[['serial', 'guess_yn']].groupby('serial').agg({'guess_yn': lambda x: (x == 'y').mean()})
-        df.merge(guess_yn_per, how='left', on='serial')
+        guess_yn_per = df[['serial', 'guess_yn']].groupby('serial').agg(guess_yn_serial=('guess_yn', lambda x: (x == 'y').mean()))
+        df = df.merge(guess_yn_per, how='left', on='serial')
+        print(">> feature 20 complete")
 
-        ########### 22. 과제별 찍는 비율
-        guess_yn_per = df[['assessmentItemID', 'guess_yn']].groupby('assessmentItemID').agg({'guess_yn': lambda x: (x == 'y').mean()})
-        df.merge(guess_yn_per, how='left', on='assessmentItemID')
+        ########### 21. 과제별 찍는 비율
+        guess_yn_per = df[['assessmentItemID', 'guess_yn']].groupby('assessmentItemID').agg(guess_yn_assessment=('guess_yn', lambda x: (x == 'y').mean()))
+        df = df.merge(guess_yn_per, how='left', on='assessmentItemID')
+        print(">> feature 21 complete")
 
-        ########### 23. 태그별 찍는 비율
-        guess_yn_per = df[['KnowledgeTag', 'guess_yn']].groupby('KnowledgeTag').agg({'guess_yn': lambda x: (x == 'y').mean()})
-        df.merge(guess_yn_per, how='left', on='KnowledgeTag')
+        ########### 22. 태그별 찍는 비율
+        guess_yn_per = df[['KnowledgeTag', 'guess_yn']].groupby('KnowledgeTag').agg(guess_yn_tag=('guess_yn', lambda x: (x == 'y').mean()))
+        df = df.merge(guess_yn_per, how='left', on='KnowledgeTag')
+        print(">> feature 22 complete")
 
-        ########### 24. 요일별 찍는 비율
-        df['day_of_week'] = df['Timestamp'].dt.dayofweek
-        guess_yn_per = df[['day_of_week', 'guess_yn']].groupby('day_of_week').agg({'guess_yn': lambda x: (x == 'y').mean()})
-        df.merge(guess_yn_per, how='left', on='day_of_week')
+        ########### 23. 요일별 찍는 비율
+        df['day_of_week'] = pd.to_datetime(df['Timestamp']).dt.dayofweek
+        guess_yn_per = df[['day_of_week', 'guess_yn']].groupby('day_of_week').agg(guess_yn_day=('guess_yn', lambda x: (x == 'y').mean()))
+        df = df.merge(guess_yn_per, how='left', on='day_of_week')
+        print(">> feature 23 complete")
 
+        ########### 24. 테스트 그룹1 별 찍는 비율
+        guess_yn_per = df[['test_group_one', 'guess_yn']].groupby('test_group_one').agg(guess_yn_group_one=('guess_yn', lambda x: (x == 'y').mean()))
+        df = df.merge(guess_yn_per, how='left', on='test_group_one')
+        print(">> feature 24 complete")
+
+        ########### 25. 테스트 그룹2 별 찍는 비율
+        guess_yn_per = df[['test_group_two', 'guess_yn']].groupby('test_group_two').agg(guess_yn_group_two=('guess_yn', lambda x: (x == 'y').mean()))
+        df = df.merge(guess_yn_per, how='left', on='test_group_two')
+        print(">> feature 25 complete")
+
+        ########### 26. 요일별 정답률을 추가
+        info = df[['day_of_week', 'answerCode']].groupby(['day_of_week']).agg({'answerCode':['sum', 'count']})
+        info['correct_percent'] = info[('answerCode', 'sum')] / info[('answerCode', 'count')]
+        percent = info['correct_percent'].to_dict()
+        df['day_correct_percent'] = df['day_of_week'].map(percent)
+        print(">> feature 26 complete")
+
+        ########### 27. 테스트 그룹1 별 정답률을 추가
+        info = df[['test_group_one', 'answerCode']].groupby(['test_group_one']).agg({'answerCode':['sum', 'count']})
+        info['correct_percent'] = info[('answerCode', 'sum')] / info[('answerCode', 'count')]
+        percent = info['correct_percent'].to_dict()
+        df['correct_percent_group_one'] = df['test_group_one'].map(percent)
+        print(">> feature 27 complete")
+
+        ########### 28. 테스트 그룹2 별 정답률을 추가
+        info = df[['test_group_two', 'answerCode']].groupby(['test_group_two']).agg({'answerCode':['sum', 'count']})
+        info['correct_percent'] = info[('answerCode', 'sum')] / info[('answerCode', 'count')]
+        percent = info['correct_percent'].to_dict()
+        df['correct_percent_group_two'] = df['test_group_two'].map(percent)
+        print(">> feature 28 complete")
+
+        ########### 29. 순번별 정답률을 추가
+        info = df[['serial', 'answerCode']].groupby(['serial']).agg({'answerCode':['sum', 'count']})
+        info['correct_percent'] = info[('answerCode', 'sum')] / info[('answerCode', 'count')]
+        percent = info['correct_percent'].to_dict()
+        df['correct_percent_serial'] = df['serial'].map(percent)
+        print(">> feature 29 complete")
+
+        ########### 30. 순번별 정답률을 추가
+        info = df[['serial', 'answerCode']].groupby(['serial']).agg({'answerCode':['sum', 'count']})
+        info['correct_percent'] = info[('answerCode', 'sum')] / info[('answerCode', 'count')]
+        percent = info['correct_percent'].to_dict()
+        df['correct_percent_serial'] = df['serial'].map(percent)
+        print(">> feature 30 complete")
+
+        ########### 31. 유저별 문제 풀이 시간
+        duration_per_user = user_test_duration.groupby('userID').agg({'duration': lambda x: x.median()})['duration'].to_dict()
+        df['duration_user'] = df['userID'].map(duration_per_user)
+        print(df.dtypes['duration_user'])
+        print(">> feature 31 complete")
+
+        ########### 32. 유저별 문제 풀이 시간
+        # duration_per_user = user_test_duration.groupby('userID').agg({'duration': lambda x: x.median()}).to_dict()
+        # df['duration_user'] = df['userID'].map(duration_per_user)
+        # print(">> feature 32 complete")
+
+        print(df.columns)
         return df
 
     def load_data_from_file(self, file_name: str, is_train: bool = True) -> np.ndarray:
@@ -257,6 +352,21 @@ class Preprocess:
                            "current_correct_count",
                            "tag_group_one",
                            "tag_group_two",
+                           'time_for_solve',
+                           'guess_yn',
+                           'guess_yn_user',
+                           'guess_yn_test',
+                           'guess_yn_serial',
+                           'guess_yn_assessment',
+                           'guess_yn_tag',
+                           'guess_yn_day',
+                           'guess_yn_group_one',
+                           'guess_yn_group_two',
+                           'correct_percent_group_one',
+                           'correct_percent_group_two',
+                           'correct_percent_serial',
+                           'day_of_week',
+                           'duration_user',
                            ]
 
         ####### 1. 테스트별 제한 시간 feature 추가
@@ -273,7 +383,6 @@ class Preprocess:
                     r["testId"].map(duration_per_test).values, # 테스트 제한시간 열
                     r["startTime"].values,
                     r["elapsedTime"].values, # 경과시간 열
-                    r["user_category"].values, # 유저 카테고리 열
                     r["test_group_one"].values,
                     r["test_group_two"].values,
                     r["serial"].values,
@@ -289,6 +398,21 @@ class Preprocess:
                     r["tag_group_one"].values,
                     r["tag_group_two"].values,
                     r["answerCode"].values, # target 열
+                    r["time_for_solve"].values,
+                    r["guess_yn"].values,
+                    r["guess_yn_user"].values,
+                    r["guess_yn_test"].values,
+                    r["guess_yn_serial"].values,
+                    r["guess_yn_assessment"].values,
+                    r["guess_yn_tag"].values,
+                    r["guess_yn_day"].values,
+                    r["guess_yn_group_one"].values,
+                    r["guess_yn_group_two"].values,
+                    r["correct_percent_group_one"].values,
+                    r["correct_percent_group_two"].values,
+                    r["correct_percent_serial"].values,
+                    r["day_of_week"].values,
+                    r["duration_user"].values,
                 )
             )
         )
@@ -316,41 +440,55 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
         row = self.data[index]
         
         # Load from data
-        (test,
-         question,
-         tag,
-         duration,
-         startTime,
-         elapsedTime,
-         userCategory,
-         testGroupOne,
-         testGroupTwo,
-         serial,
-         solved_count,
-         correct_before,
-         wrong_before,
-         same_tag_solved_count,
-         same_tag_correct_before,
-         same_tag_wrong_before,
-         item_correct_percent,
-         user_correct_percent,
-         current_correct_count,
-         tag_group_one,
-         tag_group_two,
-         correct
+        (test, # 
+         question, # 
+         tag, # 
+         duration, # 
+         startTime, # 
+         elapsedTime, # 
+         testGroupOne, # 
+         testGroupTwo, # 
+         serial, # 
+         solved_count, # 
+         correct_before, # 
+         wrong_before, # 
+         same_tag_solved_count, # 
+         same_tag_correct_before, # 
+         same_tag_wrong_before, # 
+         item_correct_percent, # 
+         user_correct_percent, # 
+         current_correct_count, # 
+         tag_group_one, # 
+         tag_group_two, # 
+         correct, # 
+         time_for_solve, # 
+         guess_yn, # 
+         guess_yn_user, # 
+         guess_yn_test, # 
+         guess_yn_serial, # 
+         guess_yn_assessment, # 
+         guess_yn_tag, # 
+         guess_yn_day, # 
+         guess_yn_group_one, # 
+         guess_yn_group_two, # 
+         correct_percent_group_one, # 
+         correct_percent_group_two, # 
+         correct_percent_serial, # 
+         day_of_week,
+         duration_user,
          ) = (
             *row,
             )
         # print(type(duration), duration)
         data = {
-            "test": torch.tensor(test + 1, dtype=torch.int), # unknown 때문에 +1 하는 듯?
+            "test": torch.tensor(test + 1, dtype=torch.int),
+            # "assessmentItemID": torch.tensor(assessmentItemID + 1, dtype=torch.int),
             "question": torch.tensor(question + 1, dtype=torch.int),
             "tag": torch.tensor(tag + 1, dtype=torch.int),
             "correct": torch.tensor(correct, dtype=torch.int),
             "duration": torch.tensor(duration, dtype=torch.float),
             "startTime": torch.tensor(startTime, dtype=torch.float),
             "elapsedTime": torch.tensor(elapsedTime, dtype=torch.float),
-            # "user_category": torch.tensor(userCategory, dtype=torch.int),
             "test_group_one": torch.tensor(testGroupOne + 1, dtype=torch.int),
             "test_group_two": torch.tensor(testGroupTwo + 1, dtype=torch.int),
             "serial": torch.tensor(serial, dtype=torch.int),
@@ -365,6 +503,21 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "current_correct_count": torch.tensor(current_correct_count, dtype=torch.int),
             "tag_group_one": torch.tensor(tag_group_one + 1, dtype=torch.int),
             "tag_group_two": torch.tensor(tag_group_two + 1, dtype=torch.int),
+            "time_for_solve": torch.tensor(time_for_solve, dtype=torch.float),
+            "guess_yn": torch.tensor(guess_yn, dtype=torch.int),
+            "guess_yn_user": torch.tensor(guess_yn_user, dtype=torch.float),
+            "guess_yn_test": torch.tensor(guess_yn_test, dtype=torch.float),
+            "guess_yn_serial": torch.tensor(guess_yn_serial, dtype=torch.float),
+            "guess_yn_assessment": torch.tensor(guess_yn_assessment, dtype=torch.float),
+            "guess_yn_tag": torch.tensor(guess_yn_tag, dtype=torch.float),
+            "guess_yn_day": torch.tensor(guess_yn_day, dtype=torch.float),
+            "guess_yn_group_one": torch.tensor(guess_yn_group_one, dtype=torch.float),
+            "guess_yn_group_two": torch.tensor(guess_yn_group_two, dtype=torch.float),
+            "correct_percent_group_one": torch.tensor(correct_percent_group_one, dtype=torch.float),
+            "correct_percent_group_two": torch.tensor(correct_percent_group_two, dtype=torch.float),
+            "correct_percent_serial": torch.tensor(correct_percent_serial, dtype=torch.float),
+            "day_of_week": torch.tensor(day_of_week, dtype=torch.int),
+            "duration_user": torch.tensor(duration_user, dtype=torch.float)
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
