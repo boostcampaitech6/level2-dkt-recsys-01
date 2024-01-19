@@ -49,7 +49,7 @@ class ModelBase(nn.Module):
         self.embedding_guess = nn.Embedding(3, guess_dim)
 
         # Concatentaed Embedding Projection
-        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 1 + guess_dim
+        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 3 + guess_dim
         
         self.comb_proj = nn.Linear(features_len, hd)
 
@@ -121,10 +121,9 @@ class ModelBase(nn.Module):
                 duration.unsqueeze(-1).float(),
                 embed_test_group_one,
                 embed_test_group_two,
-                # serial.unsqueeze(-1).int(),
                 embed_serial,
-                # solved_count.unsqueeze(-1).int(),
-                # correct_before.unsqueeze(-1).int(),
+                solved_count.unsqueeze(-1).int(),
+                correct_before.unsqueeze(-1).int(),
                 #wrong_before.unsqueeze(-1).int(),
                 #same_tag_solved_count.unsqueeze(-1).int(),
                 # same_tag_correct_before.unsqueeze(-1).int(),
