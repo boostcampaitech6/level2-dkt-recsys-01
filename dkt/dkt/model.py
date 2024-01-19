@@ -56,10 +56,8 @@ class ModelBase(nn.Module):
         self.embedding_guess_group_one = nn.Embedding(3, guess_dim)
         self.embedding_guess_group_two = nn.Embedding(3, guess_dim)
 
-        
-
         # Concatentaed Embedding Projection3
-        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 11 + (guess_dim * 1)
+        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 12 + (guess_dim * 1)
         
         self.comb_proj = nn.Linear(features_len, hd)
 
@@ -106,6 +104,7 @@ class ModelBase(nn.Module):
                 day_of_week,
                 duration_user,
                 item_difficulty,
+                zero,
                 ):
         batch_size = interaction.size(0)
         # Embedding
@@ -171,6 +170,7 @@ class ModelBase(nn.Module):
                 # embed_guess_group_two,
                 day_of_week.unsqueeze(-1).int(),
                 item_difficulty.unsqueeze(-1).float(),
+                zero.unsqueeze(-1).float(),
             ],
             dim=2,
         )
@@ -240,6 +240,7 @@ class LSTM(ModelBase):
                 day_of_week,
                 duration_user,
                 item_difficulty,
+                zero,
                 ):
         X, batch_size = super().forward(test=test,
                                         # assessmentItemID=assessmentItemID,
@@ -281,6 +282,7 @@ class LSTM(ModelBase):
                                         day_of_week=day_of_week,
                                         duration_user=duration_user,
                                         item_difficulty=item_difficulty,
+                                        zero=zero,
                                         )
         out, _ = self.lstm(X)
         out = out.contiguous()\

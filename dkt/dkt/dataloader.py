@@ -408,6 +408,10 @@ class Preprocess:
         scaling_cols.append('time_diff')
         print(">> feature 46 complete")
 
+        ########### 47. 그냥 0 넣었을 때 성능 올라갔던것 같아서 추가
+        df['zero'] = 0
+        print(">> feature 47 complete")
+
         scaler = StandardScaler()
         scaler = scaler.fit(df[scaling_cols])
         print(">> Standardization complete")
@@ -470,6 +474,7 @@ class Preprocess:
                            'day_of_week',
                            'duration_user',
                            'item_difficulty',
+                           'zero',
                            ]
 
         ####### 1. 테스트별 제한 시간 feature 추가
@@ -517,6 +522,7 @@ class Preprocess:
                     r["day_of_week"].values,
                     r["duration_user"].values,
                     r['item_difficulty'].values,
+                    r['zero'].values,
                 )
             )
         )
@@ -581,6 +587,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
          day_of_week,
          duration_user,
          item_difficulty,
+         zero,
          ) = (
             *row,
             )
@@ -624,6 +631,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "day_of_week": torch.tensor(day_of_week, dtype=torch.int),
             "duration_user": torch.tensor(duration_user, dtype=torch.float),
             "item_difficulty": torch.tensor(item_difficulty, dtype=torch.float),
+            'zero': torch.tensor(zero, dtype=torch.float),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
