@@ -56,6 +56,8 @@ class ModelBase(nn.Module):
         self.embedding_guess_group_one = nn.Embedding(3, guess_dim)
         self.embedding_guess_group_two = nn.Embedding(3, guess_dim)
 
+        
+
         # Concatentaed Embedding Projection3
         features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 11 + (guess_dim * 1)
         
@@ -138,16 +140,16 @@ class ModelBase(nn.Module):
                 embed_test_group_one,
                 embed_test_group_two,
                 embed_serial,
-                solved_count.unsqueeze(-1).int(),
-                correct_before.unsqueeze(-1).int(),
-                wrong_before.unsqueeze(-1).int(),
-                same_tag_solved_count.unsqueeze(-1).int(),
-                same_tag_correct_before.unsqueeze(-1).int(),
-                same_tag_wrong_before.unsqueeze(-1).int(),
-                current_correct_count.unsqueeze(-1).int(),
+                solved_count.unsqueeze(-1).float(),
+                correct_before.unsqueeze(-1).float(),
+                wrong_before.unsqueeze(-1).float(),
+                same_tag_solved_count.unsqueeze(-1).float(),
+                same_tag_correct_before.unsqueeze(-1).float(),
+                same_tag_wrong_before.unsqueeze(-1).float(),
+                current_correct_count.unsqueeze(-1).float(),
                 # embed_tag_group_one,
                 embed_tag_group_two,
-                time_for_solve.unsqueeze(-1).int(),
+                time_for_solve.unsqueeze(-1).float(),
                 user_correct_percent.unsqueeze(-1).float(),
                 # item_correct_percent.unsqueeze(-1).float(),
                 embed_guess,

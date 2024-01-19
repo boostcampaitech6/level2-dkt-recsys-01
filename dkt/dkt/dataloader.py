@@ -6,6 +6,7 @@ from typing import Tuple
 
 import numpy as np
 import pandas as pd
+from sklearn.discriminant_analysis import StandardScaler
 import torch
 from sklearn.preprocessing import LabelEncoder
 
@@ -93,7 +94,8 @@ class Preprocess:
 
         ############ 0. sort by userID, Timestamp
         df = df.sort_values(by=["userID", "Timestamp"], axis=0) # 유저별로 문제 풀기 시작한 시간순으로 정렬
-
+        scaling_cols = []
+        
         ############ 1. testId 별로 중간값을 테스트 시간으로 추가해줌
         # 테스트에 제한시간이 있진 않을까 싶어 테스트별 유저의 풀이시간을 기준으로 중간값 채택함
         user_test_timestamp = df[['userID', 'testId', 'Timestamp', 'assessmentItemID']].copy()
@@ -137,47 +139,51 @@ class Preprocess:
         ########### 6. 유저별로 이전에 동일한 문제를 풀었던 횟수를 추가
         # 동일한 과제를 수행했으면 다음번엔 맞출 확률이 높을 것
         df['solved_count'] = df.groupby(['userID', 'assessmentItemID']).cumcount()
+        scaling_cols.append('solved_count')
         print(">> feature 6 complete")
 
         ########### 7. 유저별로 이전에 동일한 문제를 맞췄던 횟수를 추가
         # 동일한 과제를 맞췄었으면 다음번엔 맞출 확률이 높을 것
         df['correct_before'] = df[['userID', 'assessmentItemID', 'answerCode']].groupby(['userID', 'assessmentItemID'])['answerCode'].cumsum()
         df['correct_before'] = df['correct_before'] - df['answerCode']
+        scaling_cols.append('correct_before')
         print(">> feature 7 complete")
 
         ########### 8. 유저별로 이전에 동일한 문제를 틀렸던 횟수를 추가
         # 동일한 과제를 틀렸었으면 다음번엔 맞출 확률이 높을 것
         df['wrong_before'] = df['solved_count'] - df['correct_before']
+        scaling_cols.append('wrong_before')
         print(">> feature 8 complete")
 
         ########### 9. 유저별로 이전에 동일한 태그의 문제를 풀었던 횟수를 추가
         # 동일한 과제를 수행했으면 다음번엔 맞출 확률이 높을 것
         df['same_tag_solved_count'] = df.groupby(['userID', 'assessmentItemID', 'KnowledgeTag']).cumcount()
+        scaling_cols.append('same_tag_solved_count')
         print(">> feature 9 complete")
 
         ########### 10. 유저별로 이전에 동일한 태그의 문제를 맞췄던 횟수를 추가
         # 동일한 과제를 맞췄었으면 다음번엔 맞출 확률이 높을 것
         df['same_tag_correct_before'] = df[['userID', 'assessmentItemID', 'answerCode', 'KnowledgeTag']].groupby(['userID', 'assessmentItemID', 'KnowledgeTag'])['answerCode'].cumsum()
         df['same_tag_correct_before'] = df['same_tag_correct_before'] - df['answerCode']
+        scaling_cols.append('same_tag_correct_before')
         print(">> feature 10 complete")
 
         ########### 11. 유저별로 이전에 동일한 태그의 문제를 틀렸던 횟수를 추가
         #동일한 과제를 틀렸었으면 다음번엔 맞출 확률이 높을 것
         df['same_tag_wrong_before'] = df['same_tag_solved_count'] - df['same_tag_correct_before']
+        scaling_cols.append('same_tag_wrong_before')
         print(">> feature 11 complete")
 
         ########### 12. 과제별 정답률을 추가
         #과제의 정답률을 추가하면 과제의 수준을 알 수 있어 좋을 것이다.
         item_info = df[['assessmentItemID', 'answerCode']].groupby(['assessmentItemID']).agg({'answerCode':'mean'})['answerCode'].to_dict()
         df['item_correct_percent'] = df['assessmentItemID'].map(item_info)
-        del item_info
         print(">> feature 12 complete")
 
         ########### 13. 유저별 정답률을 추가
         #유저의 정답률을 추가하면 유저의 수준을 알 수 있어 좋을 것이다.
         user_info = df[['userID', 'answerCode']].groupby(['userID']).agg({'answerCode':'mean'})['answerCode'].to_dict()
         df['user_correct_percent'] = df['userID'].map(user_info)
-        del user_info
         print(">> feature 13 complete")
 
         ########### 14. 현재까지 맞춘 과제 수
@@ -186,6 +192,7 @@ class Preprocess:
         # user_info = user_info - df['answerCode']
         df['current_correct_count'] = user_info
         df['current_correct_count'] = df['current_correct_count'] - df['answerCode']
+        scaling_cols.append('current_correct_count')
         print(">> feature 14 complete")
 
         ########### 15. 태그와 테스트 그룹간에 관계가 있지 않을까
@@ -200,21 +207,23 @@ class Preprocess:
         data = pd.to_datetime(df['Timestamp'])
 
         # get consuming time to deal with the problem
-        df['timediff'] = (data.shift(1) - data).dt.seconds
+        df['time_for_solve'] = (data.shift(-1) - data).dt.seconds
 
         # get the last item of the users
         df['next_userID'] = df.userID.shift(-1)
         last_appearances = df.apply(lambda x: True if x['userID']!=x['next_userID'] else False, axis=1)
-        df.loc[last_appearances, 'timediff'] = np.nan
+        df.loc[last_appearances, 'time_for_solve'] = np.nan
 
         # get to know last item of the tests
         df['next_testId'] = df.testId.shift(-1)
         last_appearances = df.apply(lambda x: True if x['testId']!=x['next_testId'] else False, axis=1)
-        df.loc[last_appearances, 'timediff'] = np.nan
+        df.loc[last_appearances, 'time_for_solve'] = np.nan
 
         # 1시간이 넘게 걸리면 문제가 있다고 본다.
-        df.loc[df.timediff > 3600, 'time_for_solve'] = np.nan
-        df['time_for_solve'] = 0
+        df.loc[df.time_for_solve > 3600, 'time_for_solve'] = np.nan
+
+        df['time_for_solve'].fillna(df['time_for_solve'].mode()[0], inplace=True)
+        scaling_cols.append('time_for_solve')
         print(">> feature 16 complete")
 
         ########### 17. 찍기 의심 대상
@@ -300,7 +309,6 @@ class Preprocess:
         ########### 31. 유저별 문제 풀이 시간
         duration_per_user = user_test_duration.groupby('userID').agg({'duration': lambda x: x.median()})['duration'].to_dict()
         df['duration_user'] = df['userID'].map(duration_per_user)
-        print(df.dtypes['duration_user'])
         print(">> feature 31 complete")
 
         ########### 32. 유저별 문제 풀이 시간대
@@ -374,23 +382,35 @@ class Preprocess:
         # 테스트가 많이 풀렸을 수록 정답 정보가 많이 알려져 난이도가 낮아질 것이다.
         test_info = df[['testId', 'answerCode']].groupby('testId').agg({'answerCode': lambda x: x.count()}).to_dict()
         df['test_count'] = df['testId'].map(test_info)
+        scaling_cols.append('test_count')
         print(">> feature 43 complete")
 
         ########### 44. 과제별 문제 풀이 횟수
         # 과제가 많이 풀렸을 수록 정답 정보가 많이 알려져 난이도가 낮아질 것이다.
         test_info = df[['assessmentItemID', 'answerCode']].groupby('assessmentItemID').agg({'answerCode': lambda x: x.count()}).to_dict()
         df['item_count'] = df['assessmentItemID'].map(test_info)
+        scaling_cols.append('item_count')
         print(">> feature 44 complete")
 
         ########### 45. 유저별 문제 풀이 횟수
         # 과제가 많이 풀렸을 수록 정답 정보가 많이 알려져 난이도가 낮아질 것이다.
-        test_info = df[['assessmentItemID', 'answerCode']].groupby('assessmentItemID').agg({'answerCode': lambda x: x.count()}).to_dict()
-        df['item_count'] = df['assessmentItemID'].map(test_info)
+        # test_info = df[['assessmentItemID', 'answerCode']].groupby('assessmentItemID').agg({'answerCode': lambda x: x.count()}).to_dict()
+        # df['item_count'] = df['assessmentItemID'].map(test_info)
+        # scaling_cols.append('item_count')
+        # print(">> feature 45 complete")
+        ########### 45. 과제 난이도
+        df['item_difficulty'] = df['time_for_solve'] / (df['item_correct_percent'] + 1)
         print(">> feature 45 complete")
 
-        # df['test_difficulty'] = df['time_for_solve'] / (df['item_correct_percent'] + 1)
+        ########### 46. 마지막 학습일 까지의 기간
+        # 마지막 학습일과 각 레코드의 날짜 차이 (일수)
+        df['time_diff'] = df.groupby('userID')['Timestamp'].transform(lambda x: pd.to_datetime(x.iloc[-1])-pd.to_datetime(x)).dt.seconds
+        scaling_cols.append('time_diff')
+        print(">> feature 46 complete")
 
-        df['item_difficulty'] = df['time_for_solve'] / (df['item_correct_percent'] + 1)
+        scaler = StandardScaler()
+        scaler = scaler.fit(df[scaling_cols])
+        print(">> Standardization complete")
 
         print(df.columns)
         return df
@@ -577,15 +597,15 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "test_group_one": torch.tensor(testGroupOne + 1, dtype=torch.int),
             "test_group_two": torch.tensor(testGroupTwo + 1, dtype=torch.int),
             "serial": torch.tensor(serial, dtype=torch.int),
-            "solved_count": torch.tensor(solved_count, dtype=torch.int),
-            "correct_before": torch.tensor(correct_before, dtype=torch.int),
-            "wrong_before": torch.tensor(wrong_before, dtype=torch.int),
-            "same_tag_solved_count": torch.tensor(same_tag_solved_count, dtype=torch.int),
-            "same_tag_correct_before": torch.tensor(same_tag_correct_before, dtype=torch.int),
-            "same_tag_wrong_before": torch.tensor(same_tag_wrong_before, dtype=torch.int),
+            "solved_count": torch.tensor(solved_count, dtype=torch.float),
+            "correct_before": torch.tensor(correct_before, dtype=torch.float),
+            "wrong_before": torch.tensor(wrong_before, dtype=torch.float),
+            "same_tag_solved_count": torch.tensor(same_tag_solved_count, dtype=torch.float),
+            "same_tag_correct_before": torch.tensor(same_tag_correct_before, dtype=torch.float),
+            "same_tag_wrong_before": torch.tensor(same_tag_wrong_before, dtype=torch.float),
             "item_correct_percent": torch.tensor(item_correct_percent, dtype=torch.float),
             "user_correct_percent": torch.tensor(user_correct_percent, dtype=torch.float),
-            "current_correct_count": torch.tensor(current_correct_count, dtype=torch.int),
+            "current_correct_count": torch.tensor(current_correct_count, dtype=torch.float),
             "tag_group_one": torch.tensor(tag_group_one + 1, dtype=torch.int),
             "tag_group_two": torch.tensor(tag_group_two + 1, dtype=torch.int),
             "time_for_solve": torch.tensor(time_for_solve, dtype=torch.float),
