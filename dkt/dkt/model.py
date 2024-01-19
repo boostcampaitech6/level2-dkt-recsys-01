@@ -58,6 +58,9 @@ class ModelBase(nn.Module):
 
         # Concatentaed Embedding Projection3
         features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 11 + (guess_dim * 1)
+
+        day_dim = 100
+        #self.embedding_day = nn.Embedding(7, day_dim)
         
         self.comb_proj = nn.Linear(features_len, hd)
 
@@ -169,8 +172,8 @@ class ModelBase(nn.Module):
                 # embed_guess_group_one,
                 # embed_guess_group_two,
                 day_of_week.unsqueeze(-1).int(),
-                # item_difficulty.unsqueeze(-1).float(),
-                zero.unsqueeze(-1).float(),
+                item_difficulty.unsqueeze(-1).float(),
+                # zero.unsqueeze(-1).float(),
             ],
             dim=2,
         )
