@@ -49,7 +49,7 @@ class ModelBase(nn.Module):
         self.embedding_guess = nn.Embedding(3, guess_dim)
 
         # Concatentaed Embedding Projection3
-        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 7 + guess_dim
+        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 8 + guess_dim
         
         self.comb_proj = nn.Linear(features_len, hd)
 
@@ -96,7 +96,6 @@ class ModelBase(nn.Module):
                 day_of_week,
                 duration_user,
                 ):
-        # print(test.shape, question.shape, tag.shape, interaction.shape, duration.shape)
         batch_size = interaction.size(0)
         # Embedding
         embed_interaction = self.embedding_interaction(interaction.int())
@@ -142,7 +141,7 @@ class ModelBase(nn.Module):
                 # guess_yn_day.unsqueeze(-1).int(),
                 # guess_yn_group_one.unsqueeze(-1).int(),
                 # guess_yn_group_two.unsqueeze(-1).int(),
-                # day_of_week.unsqueeze(-1).int(),
+                day_of_week.unsqueeze(-1).int(),
             ],
             dim=2,
         )
