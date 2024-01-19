@@ -449,6 +449,7 @@ class Preprocess:
                            'correct_percent_serial',
                            'day_of_week',
                            'duration_user',
+                           'item_difficulty',
                            ]
 
         ####### 1. 테스트별 제한 시간 feature 추가
@@ -495,6 +496,7 @@ class Preprocess:
                     r["correct_percent_serial"].values,
                     r["day_of_week"].values,
                     r["duration_user"].values,
+                    r['item_difficulty'].values,
                 )
             )
         )
@@ -558,6 +560,7 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
          correct_percent_serial, # 
          day_of_week,
          duration_user,
+         item_difficulty,
          ) = (
             *row,
             )
@@ -599,7 +602,8 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "correct_percent_group_two": torch.tensor(correct_percent_group_two, dtype=torch.float),
             "correct_percent_serial": torch.tensor(correct_percent_serial, dtype=torch.float),
             "day_of_week": torch.tensor(day_of_week, dtype=torch.int),
-            "duration_user": torch.tensor(duration_user, dtype=torch.float)
+            "duration_user": torch.tensor(duration_user, dtype=torch.float),
+            "item_difficulty": torch.tensor(item_difficulty, dtype=torch.float),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다

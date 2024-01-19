@@ -57,7 +57,7 @@ class ModelBase(nn.Module):
         self.embedding_guess_group_two = nn.Embedding(3, guess_dim)
 
         # Concatentaed Embedding Projection3
-        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 10 + (guess_dim * 9)
+        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 11 + (guess_dim * 1)
         
         self.comb_proj = nn.Linear(features_len, hd)
 
@@ -103,6 +103,7 @@ class ModelBase(nn.Module):
                 correct_percent_serial,
                 day_of_week,
                 duration_user,
+                item_difficulty,
                 ):
         batch_size = interaction.size(0)
         # Embedding
@@ -158,15 +159,16 @@ class ModelBase(nn.Module):
                 # guess_yn_day.unsqueeze(-1).float(),
                 # guess_yn_group_one.unsqueeze(-1).float(),
                 # guess_yn_group_two.unsqueeze(-1).float(),
-                embed_guess_user,
-                embed_guess_test,
-                embed_guess_serial,
-                embed_guess_assessment,
-                embed_guess_tag,
-                embed_guess_day,
-                embed_guess_group_one,
-                embed_guess_group_two,
+                # embed_guess_user,
+                # embed_guess_test,
+                # embed_guess_serial,
+                # embed_guess_assessment,
+                # embed_guess_tag,
+                # embed_guess_day,
+                # embed_guess_group_one,
+                # embed_guess_group_two,
                 day_of_week.unsqueeze(-1).int(),
+                item_difficulty.unsqueeze(-1).float(),
             ],
             dim=2,
         )
@@ -235,6 +237,7 @@ class LSTM(ModelBase):
                 correct_percent_serial,
                 day_of_week,
                 duration_user,
+                item_difficulty,
                 ):
         X, batch_size = super().forward(test=test,
                                         # assessmentItemID=assessmentItemID,
@@ -275,6 +278,7 @@ class LSTM(ModelBase):
                                         correct_percent_serial=correct_percent_serial,
                                         day_of_week=day_of_week,
                                         duration_user=duration_user,
+                                        item_difficulty=item_difficulty,
                                         )
         out, _ = self.lstm(X)
         out = out.contiguous()\
