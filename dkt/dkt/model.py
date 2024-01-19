@@ -47,9 +47,17 @@ class ModelBase(nn.Module):
 
         guess_dim = 10
         self.embedding_guess = nn.Embedding(3, guess_dim)
+        self.embedding_guess_user = nn.Embedding(3, guess_dim)
+        self.embedding_guess_test = nn.Embedding(3, guess_dim)
+        self.embedding_guess_serial = nn.Embedding(3, guess_dim)
+        self.embedding_guess_assessment = nn.Embedding(3, guess_dim)
+        self.embedding_guess_tag = nn.Embedding(3, guess_dim)
+        self.embedding_guess_day = nn.Embedding(3, guess_dim)
+        self.embedding_guess_group_one = nn.Embedding(3, guess_dim)
+        self.embedding_guess_group_two = nn.Embedding(3, guess_dim)
 
         # Concatentaed Embedding Projection3
-        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 10 + guess_dim
+        features_len = (intd * 4) + 1 + (test_group_dim * 2) + serial_dim + (tag_group_dim * 1) + 10 + (guess_dim * 9)
         
         self.comb_proj = nn.Linear(features_len, hd)
 
@@ -110,6 +118,14 @@ class ModelBase(nn.Module):
         embed_tag_group_two = self.embedding_tag_group_two(tag_group_two.int())
 
         embed_guess = self.embedding_guess(guess_yn.int())
+        embed_guess_user = self.embedding_guess_user(guess_yn_user.int())
+        embed_guess_test = self.embedding_guess_test(guess_yn_test.int())
+        embed_guess_serial = self.embedding_guess_serial(guess_yn_serial.int())
+        embed_guess_assessment = self.embedding_guess_assessment(guess_yn_assessment.int())
+        embed_guess_tag = self.embedding_guess_tag(guess_yn_tag.int())
+        embed_guess_day = self.embedding_guess_day(guess_yn_day.int())
+        embed_guess_group_one = self.embedding_guess_group_one(guess_yn_group_one.int())
+        embed_guess_group_two = self.embedding_guess_group_two(guess_yn_group_two.int())
 
         embed = torch.cat(
             [
@@ -128,19 +144,28 @@ class ModelBase(nn.Module):
                 same_tag_correct_before.unsqueeze(-1).int(),
                 same_tag_wrong_before.unsqueeze(-1).int(),
                 current_correct_count.unsqueeze(-1).int(),
-                #embed_tag_group_one,
+                # embed_tag_group_one,
                 embed_tag_group_two,
                 time_for_solve.unsqueeze(-1).int(),
-                user_correct_percent.unsqueeze(-1).int(),
+                user_correct_percent.unsqueeze(-1).float(),
+                # item_correct_percent.unsqueeze(-1).float(),
                 embed_guess,
-                # guess_yn_user.unsqueeze(-1).int(),
-                # guess_yn_test.unsqueeze(-1).int(),
-                # guess_yn_serial.unsqueeze(-1).int(),
-                # guess_yn_assessment.unsqueeze(-1).int(),
-                # guess_yn_tag.unsqueeze(-1).int(),
-                # guess_yn_day.unsqueeze(-1).int(),
-                # guess_yn_group_one.unsqueeze(-1).int(),
-                # guess_yn_group_two.unsqueeze(-1).int(),
+                # guess_yn_user.unsqueeze(-1).float(),
+                # guess_yn_test.unsqueeze(-1).float(),
+                # guess_yn_serial.unsqueeze(-1).float(),
+                # guess_yn_assessment.unsqueeze(-1).float(),
+                # guess_yn_tag.unsqueeze(-1).float(),
+                # guess_yn_day.unsqueeze(-1).float(),
+                # guess_yn_group_one.unsqueeze(-1).float(),
+                # guess_yn_group_two.unsqueeze(-1).float(),
+                embed_guess_user,
+                embed_guess_test,
+                embed_guess_serial,
+                embed_guess_assessment,
+                embed_guess_tag,
+                embed_guess_day,
+                embed_guess_group_one,
+                embed_guess_group_two,
                 day_of_week.unsqueeze(-1).int(),
             ],
             dim=2,

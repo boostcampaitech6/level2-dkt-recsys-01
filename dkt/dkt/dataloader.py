@@ -293,10 +293,8 @@ class Preprocess:
         print(">> feature 29 complete")
 
         ########### 30. 순번별 정답률을 추가
-        info = df[['serial', 'answerCode']].groupby(['serial']).agg({'answerCode':['sum', 'count']})
-        info['correct_percent'] = info[('answerCode', 'sum')] / info[('answerCode', 'count')]
-        percent = info['correct_percent'].to_dict()
-        df['correct_percent_serial'] = df['serial'].map(percent)
+        threshold_value = np.percentile(df['time_for_solve'], 5)
+        df['guess_yn'] = df['time_for_solve'].apply(lambda x: 'y' if x < threshold_value else 'n')
         print(">> feature 30 complete")
 
         ########### 31. 유저별 문제 풀이 시간
@@ -305,10 +303,94 @@ class Preprocess:
         print(df.dtypes['duration_user'])
         print(">> feature 31 complete")
 
-        ########### 32. 유저별 문제 풀이 시간
-        # duration_per_user = user_test_duration.groupby('userID').agg({'duration': lambda x: x.median()}).to_dict()
-        # df['duration_user'] = df['userID'].map(duration_per_user)
-        # print(">> feature 32 complete")
+        ########### 32. 유저별 문제 풀이 시간대
+        # 가장 많이 푼 시간대에 푸는 경우 더 정답률이 높을 것이다.
+        df['hour'] = pd.to_datetime(df['Timestamp']).dt.hour
+        hour_per_user = df[['userID', 'hour']].groupby('userID').agg({'hour': lambda x: x.mode()}).to_dict()
+        df['user_mode_hour'] = df['userID'].map(hour_per_user)
+        print(">> feature 32 complete")
+
+        ########### 33. 유저별 최다 문제 풀이 년도
+        # 가장 많이 푼 년도에 가장 실력이 높았다가 점점 낮아질 것이다.
+        df['year'] = pd.to_datetime(df['Timestamp']).dt.year
+        year_per_user = df[['userID', 'year']].groupby('userID').agg({'year': lambda x: x.mode()}).to_dict()
+        df['user_mode_year'] = df['userID'].map(year_per_user)
+        print(">> feature 33 complete")
+
+        ########### 34. 테스트별 처음 발생 년도
+        # 오래된 문제는 풀이법이 많이 풀려서 정답을 맞출 확률이 높을 것이다.
+        year_per_test = df[['testId', 'year']].groupby('testId').agg({'year': lambda x: x.min()}).to_dict()
+        df['test_min_year'] = df['testId'].map(year_per_test)
+        print(">> feature 34 complete")
+
+        ########### 35. 테스트별 문항 최다 발생 년도
+        # 가장 빈번하게 풀린 문제는 해당 년도애 풀면 더 잘 맞출 것이다.
+        year_per_test = df[['testId', 'year']].groupby('testId').agg({'year': lambda x: x.mode()}).to_dict()
+        df['test_mode_year'] = df['testId'].map(year_per_test)
+        print(">> feature 35 complete")
+
+        ########### 36. 테스트별 마지막 발생 년도
+        # 오래전에 풀린 문제일 수록 정보가 적어져 잘 못 풀수 있을 것이다.
+        year_per_test = df[['testId', 'year']].groupby('testId').agg({'year': lambda x: x.max()}).to_dict()
+        df['test_max_year'] = df['testId'].map(year_per_test)
+        print(">> feature 36 complete")
+
+        ########### 37. 아이템별 처음 발생 년도
+        # 오래된 문제는 풀이법이 많이 풀려서 정답을 맞출 확률이 높을 것이다.
+        year_per_item = df[['assessmentItemID', 'year']].groupby('assessmentItemID').agg({'year': lambda x: x.min()}).to_dict()
+        df['item_min_year'] = df['assessmentItemID'].map(year_per_item)
+        print(">> feature 37 complete")
+
+        ########### 38. 아이템별 문항 최다 발생 년도
+        # 가장 빈번하게 풀린 문제는 해당 년도에 풀면 더 잘 맞출 것이다.
+        year_per_item = df[['assessmentItemID', 'year']].groupby('assessmentItemID').agg({'year': lambda x: x.mode()}).to_dict()
+        df['item_mode_year'] = df['assessmentItemID'].map(year_per_item)
+        print(">> feature 38 complete")
+
+        ########### 39. 아이템별 마지막 발생 년도
+        # 오래전에 풀린 문제일 수록 정보가 적어져 못 풀수 있을 것이다.
+        year_per_item = df[['assessmentItemID', 'year']].groupby('assessmentItemID').agg({'year': lambda x: x.max()}).to_dict()
+        df['item_max_year'] = df['assessmentItemID'].map(year_per_item)
+        print(">> feature 39 complete")
+
+        ########### 40. 유저별 마지막 풀이 년도
+        # 테스트를 오래전에 풀었을 수록 실력이 떨어질 것이다.
+        year_info = df[['userID', 'year']].groupby('userID').agg({'year': lambda x: x.max()}).to_dict()
+        df['user_max_year'] = df['userID'].map(year_info)
+        print(">> feature 40 complete")
+
+        ########### 41. 유저별 최초 풀이 년도
+        # 테스트를 오래전부터 풀기 시작했을수록 실력이 높을 것이다.
+        year_info = df[['userID', 'year']].groupby('userID').agg({'year': lambda x: x.min()}).to_dict()
+        df['user_min_year'] = df['userID'].map(year_info)
+        print(">> feature 41 complete")
+
+        ########### 42. 유저별 문제 풀이 기간
+        # 테스트를 오랜 기간 풀었을 수록 실력이 높을 것이다.
+        df['user_period_year'] = df['user_max_year'] - df['user_min_year']
+        print(">> feature 42 complete")
+
+        ########### 43. 테스트별 문제 풀이 횟수
+        # 테스트가 많이 풀렸을 수록 정답 정보가 많이 알려져 난이도가 낮아질 것이다.
+        test_info = df[['testId', 'answerCode']].groupby('testId').agg({'answerCode': lambda x: x.count()}).to_dict()
+        df['test_count'] = df['testId'].map(test_info)
+        print(">> feature 43 complete")
+
+        ########### 44. 과제별 문제 풀이 횟수
+        # 과제가 많이 풀렸을 수록 정답 정보가 많이 알려져 난이도가 낮아질 것이다.
+        test_info = df[['assessmentItemID', 'answerCode']].groupby('assessmentItemID').agg({'answerCode': lambda x: x.count()}).to_dict()
+        df['item_count'] = df['assessmentItemID'].map(test_info)
+        print(">> feature 44 complete")
+
+        ########### 45. 유저별 문제 풀이 횟수
+        # 과제가 많이 풀렸을 수록 정답 정보가 많이 알려져 난이도가 낮아질 것이다.
+        test_info = df[['assessmentItemID', 'answerCode']].groupby('assessmentItemID').agg({'answerCode': lambda x: x.count()}).to_dict()
+        df['item_count'] = df['assessmentItemID'].map(test_info)
+        print(">> feature 45 complete")
+
+        # df['test_difficulty'] = df['time_for_solve'] / (df['item_correct_percent'] + 1)
+
+        df['item_difficulty'] = df['time_for_solve'] / (df['item_correct_percent'] + 1)
 
         print(df.columns)
         return df
