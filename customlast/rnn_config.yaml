@@ -2,7 +2,7 @@
 modelname: lastquery
 result_dir: .
 data_dir: dataset/ #../data/
-data_name: dataset_v4-128-False-22.pt
+data_name: dataset_v4-512-False-22.pt
 max_length: 512
 embed: False
 wandb_config:
@@ -17,7 +17,7 @@ train_config:
   hidden_dim: 128
   activation_f: tanh
   learnin_rate: .001
-  epochs: 1
+  epochs: 100
   patience: 10
 
   # lr scheduler

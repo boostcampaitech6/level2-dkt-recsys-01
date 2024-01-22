@@ -1,4 +1,4 @@
-train_path: ../../../data/train_data.csv
-test_path: ../../../data/test_data.csv
-max_length: 128
+train_path: ../../data/train_data.csv
+test_path: ../../data/test_data.csv
+max_length: 512 
 embed: False 
