@@ -1,7 +1,7 @@
 import os
-
+import yaml
 import torch
-
+from easydict import EasyDict
 from lightgcn.args import parse_args
 from lightgcn.datasets import prepare_dataset
 from lightgcn import trainer
@@ -33,6 +33,7 @@ def main(args):
     trainer.inference(model=model, data=test_data, output_dir=args.output_dir)
 
 if __name__ == "__main__":
-    args = parse_args()
+    with open('lightgcn/args.yaml') as file:
+        args = EasyDict(yaml.safe_load(file))
     os.makedirs(name=args.model_dir, exist_ok=True)
     main(args=args)

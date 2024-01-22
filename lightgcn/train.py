@@ -1,6 +1,7 @@
-import os, yaml
+import os
+import yaml
 from easydict import EasyDict
-
+from datetime import datetime
 import torch
 import wandb
 
@@ -13,8 +14,13 @@ logger = get_logger(logging_conf)
 
 
 def main(args: EasyDict):
+    
+    global wandb_id
+    wandb_id = wandb.util.generate_id()
+    args.timestamp = datetime.today().strftime("%Y%m%d%H%M")
+    run_name = f'{args.model}_{args.timestamp}'
     wandb.login()
-    wandb.init(project="dkt", config=vars(args))
+    wandb.init(id = wandb_id, resume = "allow", project="lightgcn", name= run_name, config=vars(args))
     set_seeds(args.seed)
     
     use_cuda: bool = torch.cuda.is_available() and args.use_cuda_if_available
@@ -39,7 +45,15 @@ def main(args: EasyDict):
         n_epochs=args.n_epochs,
         learning_rate=args.lr,
         model_dir=args.model_dir,
+        run_name=run_name
     )
+    
+    trainer.inference(
+        model=model,
+        data=test_data,
+        output_dir=args.output_dir,
+        model_dir= args.model_dir,
+        run_name=run_name)
 
 
 if __name__ == "__main__":
