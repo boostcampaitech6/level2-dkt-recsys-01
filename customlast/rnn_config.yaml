@@ -1,0 +1,33 @@
+#INITIAL SETTINGS
+modelname: lastquery
+result_dir: .
+data_dir: dataset/ #../data/
+data_name: dataset_v4-128-False-22.pt
+max_length: 512
+embed: False
+wandb_config:
+  wandb: True
+  project_name: dkt-dl
+
+# train params
+train_config:
+  # RNN parameters
+  batch_size: 16
+  emb_dim: 128
+  hidden_dim: 128
+  activation_f: tanh
+  learnin_rate: .001
+  epochs: 1
+  patience: 10
+
+  # lr scheduler
+  CosineAnnealingLR:
+    T_max: 10
+    eta_min: 0
+  StepLR:
+    step_size: 2
+    gamma: 0.1
+  CosineAnnealingWarmRestarts:
+    T_0: 1
+    T_mult: 1
+    eta_min: 0
