@@ -303,7 +303,7 @@ class Preprocess:
 
         ########### 30. 순번별 정답률을 추가
         threshold_value = np.percentile(df['time_for_solve'], 5)
-        df['guess_yn'] = df['time_for_solve'].apply(lambda x: 'y' if x < threshold_value else 'n')
+        df['guess_yn'] = df['time_for_solve'].apply(lambda x: 'y' if x < 2 else 'n')
         print(">> feature 30 complete")
 
         ########### 31. 유저별 문제 풀이 시간
@@ -314,63 +314,65 @@ class Preprocess:
         ########### 32. 유저별 문제 풀이 시간대
         # 가장 많이 푼 시간대에 푸는 경우 더 정답률이 높을 것이다.
         df['hour'] = pd.to_datetime(df['Timestamp']).dt.hour
+
+        print(f"hour dtype = {df.dtypes['hour']}")
         hour_per_user = df[['userID', 'hour']].groupby('userID').agg({'hour': lambda x: x.mode()}).to_dict()
-        df['user_mode_hour'] = df['userID'].map(hour_per_user)
+        df['user_mode_hour'] = df['userID'].map(hour_per_user).fillna(0)
         print(">> feature 32 complete")
 
         ########### 33. 유저별 최다 문제 풀이 년도
         # 가장 많이 푼 년도에 가장 실력이 높았다가 점점 낮아질 것이다.
         df['year'] = pd.to_datetime(df['Timestamp']).dt.year
         year_per_user = df[['userID', 'year']].groupby('userID').agg({'year': lambda x: x.mode()}).to_dict()
-        df['user_mode_year'] = df['userID'].map(year_per_user)
+        df['user_mode_year'] = df['userID'].map(year_per_user).fillna(0)
         print(">> feature 33 complete")
 
         ########### 34. 테스트별 처음 발생 년도
         # 오래된 문제는 풀이법이 많이 풀려서 정답을 맞출 확률이 높을 것이다.
         year_per_test = df[['testId', 'year']].groupby('testId').agg({'year': lambda x: x.min()}).to_dict()
-        df['test_min_year'] = df['testId'].map(year_per_test)
+        df['test_min_year'] = df['testId'].map(year_per_test).fillna(0)
         print(">> feature 34 complete")
 
         ########### 35. 테스트별 문항 최다 발생 년도
         # 가장 빈번하게 풀린 문제는 해당 년도애 풀면 더 잘 맞출 것이다.
         year_per_test = df[['testId', 'year']].groupby('testId').agg({'year': lambda x: x.mode()}).to_dict()
-        df['test_mode_year'] = df['testId'].map(year_per_test)
+        df['test_mode_year'] = df['testId'].map(year_per_test).fillna(0)
         print(">> feature 35 complete")
 
         ########### 36. 테스트별 마지막 발생 년도
         # 오래전에 풀린 문제일 수록 정보가 적어져 잘 못 풀수 있을 것이다.
         year_per_test = df[['testId', 'year']].groupby('testId').agg({'year': lambda x: x.max()}).to_dict()
-        df['test_max_year'] = df['testId'].map(year_per_test)
+        df['test_max_year'] = df['testId'].map(year_per_test).fillna(0)
         print(">> feature 36 complete")
 
         ########### 37. 아이템별 처음 발생 년도
         # 오래된 문제는 풀이법이 많이 풀려서 정답을 맞출 확률이 높을 것이다.
         year_per_item = df[['assessmentItemID', 'year']].groupby('assessmentItemID').agg({'year': lambda x: x.min()}).to_dict()
-        df['item_min_year'] = df['assessmentItemID'].map(year_per_item)
+        df['item_min_year'] = df['assessmentItemID'].map(year_per_item).fillna(0)
         print(">> feature 37 complete")
 
         ########### 38. 아이템별 문항 최다 발생 년도
         # 가장 빈번하게 풀린 문제는 해당 년도에 풀면 더 잘 맞출 것이다.
         year_per_item = df[['assessmentItemID', 'year']].groupby('assessmentItemID').agg({'year': lambda x: x.mode()}).to_dict()
-        df['item_mode_year'] = df['assessmentItemID'].map(year_per_item)
+        df['item_mode_year'] = df['assessmentItemID'].map(year_per_item).fillna(0)
         print(">> feature 38 complete")
 
         ########### 39. 아이템별 마지막 발생 년도
         # 오래전에 풀린 문제일 수록 정보가 적어져 못 풀수 있을 것이다.
         year_per_item = df[['assessmentItemID', 'year']].groupby('assessmentItemID').agg({'year': lambda x: x.max()}).to_dict()
-        df['item_max_year'] = df['assessmentItemID'].map(year_per_item)
+        df['item_max_year'] = df['assessmentItemID'].map(year_per_item).fillna(0)
         print(">> feature 39 complete")
 
         ########### 40. 유저별 마지막 풀이 년도
         # 테스트를 오래전에 풀었을 수록 실력이 떨어질 것이다.
         year_info = df[['userID', 'year']].groupby('userID').agg({'year': lambda x: x.max()}).to_dict()
-        df['user_max_year'] = df['userID'].map(year_info)
+        df['user_max_year'] = df['userID'].map(year_info).fillna(0)
         print(">> feature 40 complete")
 
         ########### 41. 유저별 최초 풀이 년도
         # 테스트를 오래전부터 풀기 시작했을수록 실력이 높을 것이다.
         year_info = df[['userID', 'year']].groupby('userID').agg({'year': lambda x: x.min()}).to_dict()
-        df['user_min_year'] = df['userID'].map(year_info)
+        df['user_min_year'] = df['userID'].map(year_info).fillna(0)
         print(">> feature 41 complete")
 
         ########### 42. 유저별 문제 풀이 기간
@@ -381,23 +383,17 @@ class Preprocess:
         ########### 43. 테스트별 문제 풀이 횟수
         # 테스트가 많이 풀렸을 수록 정답 정보가 많이 알려져 난이도가 낮아질 것이다.
         test_info = df[['testId', 'answerCode']].groupby('testId').agg({'answerCode': lambda x: x.count()}).to_dict()
-        df['test_count'] = df['testId'].map(test_info)
+        df['test_count'] = df['testId'].map(test_info).fillna(0)
         scaling_cols.append('test_count')
         print(">> feature 43 complete")
 
         ########### 44. 과제별 문제 풀이 횟수
         # 과제가 많이 풀렸을 수록 정답 정보가 많이 알려져 난이도가 낮아질 것이다.
         test_info = df[['assessmentItemID', 'answerCode']].groupby('assessmentItemID').agg({'answerCode': lambda x: x.count()}).to_dict()
-        df['item_count'] = df['assessmentItemID'].map(test_info)
+        df['item_count'] = df['assessmentItemID'].map(test_info).fillna(0)
         scaling_cols.append('item_count')
         print(">> feature 44 complete")
 
-        ########### 45. 유저별 문제 풀이 횟수
-        # 과제가 많이 풀렸을 수록 정답 정보가 많이 알려져 난이도가 낮아질 것이다.
-        # test_info = df[['assessmentItemID', 'answerCode']].groupby('assessmentItemID').agg({'answerCode': lambda x: x.count()}).to_dict()
-        # df['item_count'] = df['assessmentItemID'].map(test_info)
-        # scaling_cols.append('item_count')
-        # print(">> feature 45 complete")
         ########### 45. 과제 난이도
         df['item_difficulty'] = df['time_for_solve'] / (df['item_correct_percent'] + 1)
         print(">> feature 45 complete")
@@ -411,6 +407,17 @@ class Preprocess:
         ########### 47. 그냥 0 넣었을 때 성능 올라갔던것 같아서 추가
         df['zero'] = 0
         print(">> feature 47 complete")
+
+        ########### 48. 유저 실력
+        df['user_ability'] = df['time_for_solve'] / (df['user_correct_percent'] + 1)
+        print(">> feature 48 complete")
+
+        ########### 45. 유저별 문제 풀이 횟수
+        # 과제가 많이 풀렸을 수록 정답 정보가 많이 알려져 난이도가 낮아질 것이다.
+        info = df[['userID', 'answerCode']].groupby('userID').cumcount().to_dict()
+        df['user_solve_count'] = df['userID'].map(info).fillna(0)
+        scaling_cols.append('user_solve_count')
+        print(">> feature 45 complete")
 
         scaler = StandardScaler()
         scaler = scaler.fit(df[scaling_cols])
@@ -468,17 +475,38 @@ class Preprocess:
                            'guess_yn_day',
                            'guess_yn_group_one',
                            'guess_yn_group_two',
+                           'day_of_week',
+                           'item_difficulty',
+                           'zero',
+                           'user_ability',
+                           'day_correct_percent',
                            'correct_percent_group_one',
                            'correct_percent_group_two',
                            'correct_percent_serial',
-                           'day_of_week',
                            'duration_user',
-                           'item_difficulty',
-                           'zero',
+                           'user_mode_hour',
+                           'hour',
+                           'year',
+                           'user_mode_year',
+                           'test_min_year',
+                           'test_mode_year',
+                           'test_max_year',
+                           'item_min_year',
+                           'item_mode_year',
+                           'item_max_year',
+                           'user_max_year',
+                           'user_min_year',
+                           'user_period_year',
+                           'test_count',
+                           'item_count',
+                           'time_diff',
+                           'user_solve_count',
                            ]
 
         ####### 1. 테스트별 제한 시간 feature 추가
         duration_per_test = dict(zip(df['testId'], df['duration'])) # testID별 duration dict
+
+        print(columns + one_hot_cats + additional_cols)
 
         group = (
             df[columns + one_hot_cats + additional_cols] # 사용할 columns 의 series들만 dataFrame으로 가져옴
@@ -516,13 +544,32 @@ class Preprocess:
                     r["guess_yn_day"].values,
                     r["guess_yn_group_one"].values,
                     r["guess_yn_group_two"].values,
-                    r["correct_percent_group_one"].values,
-                    r["correct_percent_group_two"].values,
-                    r["correct_percent_serial"].values,
                     r["day_of_week"].values,
-                    r["duration_user"].values,
-                    r['item_difficulty'].values,
                     r['zero'].values,
+                    r['user_ability'].values,
+                    r['day_correct_percent'].values,
+                    r['correct_percent_group_one'].values,
+                    r['correct_percent_group_two'].values,
+                    r['correct_percent_serial'].values,
+                    r['duration_user'].values,
+                    r['user_mode_hour'].values,
+                    r['hour'].values,
+                    r['year'].values,
+                    r['user_mode_year'].values,
+                    r['test_min_year'].values,
+                    r['test_mode_year'].values,
+                    r['test_max_year'].values,
+                    r['item_min_year'].values,
+                    r['item_mode_year'].values,
+                    r['item_max_year'].values,
+                    r['user_max_year'].values,
+                    r['user_min_year'].values,
+                    r['user_period_year'].values,
+                    r['test_count'].values,
+                    r['item_count'].values,
+                    r['item_difficulty'].values,
+                    r['time_diff'].values,
+                    r['user_solve_count'].values,
                 )
             )
         )
@@ -581,17 +628,36 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
          guess_yn_day, # 
          guess_yn_group_one, # 
          guess_yn_group_two, # 
-         correct_percent_group_one, # 
-         correct_percent_group_two, # 
-         correct_percent_serial, # 
          day_of_week,
-         duration_user,
-         item_difficulty,
          zero,
+         user_ability,
+         day_correct_percent,
+         correct_percent_group_one,
+         correct_percent_group_two,
+         correct_percent_serial,
+         duration_user,
+         user_mode_hour,
+         hour,
+         year,
+         user_mode_year,
+         test_min_year,
+         test_mode_year,
+         test_max_year,
+         item_min_year,
+         item_mode_year,
+         item_max_year,
+         user_max_year,
+         user_min_year,
+         user_period_year,
+         test_count,
+         item_count,
+         item_difficulty,
+         time_diff,
+         user_solve_count,
          ) = (
             *row,
             )
-        # print(type(duration), duration)
+        # print(">>>>", type(user_mode_hour), user_mode_hour)
         data = {
             "test": torch.tensor(test + 1, dtype=torch.int),
             # "assessmentItemID": torch.tensor(assessmentItemID + 1, dtype=torch.int),
@@ -625,13 +691,32 @@ class DKTDataset(torch.utils.data.Dataset): # Sequence 형태로 처리하는 DK
             "guess_yn_day": torch.tensor(guess_yn_day, dtype=torch.float),
             "guess_yn_group_one": torch.tensor(guess_yn_group_one, dtype=torch.float),
             "guess_yn_group_two": torch.tensor(guess_yn_group_two, dtype=torch.float),
-            "correct_percent_group_one": torch.tensor(correct_percent_group_one, dtype=torch.float),
-            "correct_percent_group_two": torch.tensor(correct_percent_group_two, dtype=torch.float),
-            "correct_percent_serial": torch.tensor(correct_percent_serial, dtype=torch.float),
             "day_of_week": torch.tensor(day_of_week, dtype=torch.int),
-            "duration_user": torch.tensor(duration_user, dtype=torch.float),
-            "item_difficulty": torch.tensor(item_difficulty, dtype=torch.float),
             'zero': torch.tensor(zero, dtype=torch.float),
+            'user_ability': torch.tensor(user_ability, dtype=torch.float),
+            'day_correct_percent' : torch.tensor(day_correct_percent, dtype=torch.float),
+            'correct_percent_group_one' : torch.tensor(correct_percent_group_one, dtype=torch.float),
+            'correct_percent_group_two' : torch.tensor(correct_percent_group_two, dtype=torch.float),
+            'correct_percent_serial' : torch.tensor(correct_percent_serial, dtype=torch.float),
+            'duration_user' : torch.tensor(duration_user, dtype=torch.float),
+            'user_mode_hour' : torch.tensor(user_mode_hour, dtype=torch.int32),
+            'hour' : torch.tensor(hour, dtype=torch.int32),
+            'year' : torch.tensor(year, dtype=torch.int32),
+            'user_mode_year' : torch.tensor(user_mode_year, dtype=torch.float),
+            'test_min_year' : torch.tensor(test_min_year, dtype=torch.float),
+            'test_mode_year' : torch.tensor(test_mode_year, dtype=torch.float),
+            'test_max_year' : torch.tensor(test_max_year, dtype=torch.float),
+            'item_min_year' : torch.tensor(item_min_year, dtype=torch.float),
+            'item_mode_year' : torch.tensor(item_mode_year, dtype=torch.float),
+            'item_max_year' : torch.tensor(item_max_year, dtype=torch.float),
+            'user_max_year' : torch.tensor(user_max_year, dtype=torch.float),
+            'user_min_year' : torch.tensor(user_min_year, dtype=torch.float),
+            'user_period_year' : torch.tensor(user_period_year, dtype=torch.float),
+            'test_count' : torch.tensor(test_count, dtype=torch.float),
+            'item_count' : torch.tensor(item_count, dtype=torch.float),
+            'item_difficulty' : torch.tensor(item_difficulty, dtype=torch.float),
+            'time_diff' : torch.tensor(time_diff, dtype=torch.float),
+            'user_solve_count' : torch.tensor(user_solve_count, dtype=torch.float),
         }
 
         # Generate mask: max seq len을 고려하여서 이보다 길면 자르고 아닐 경우 그대로 냅둔다
