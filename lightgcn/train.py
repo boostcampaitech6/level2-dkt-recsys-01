@@ -28,7 +28,7 @@ def main(args: EasyDict):
     device = torch.device("cuda" if use_cuda else "cpu")
 
     logger.info("Preparing data ...")
-    train_data, test_data, n_node = prepare_dataset(device=device, data_dir=args.data_dir)
+    train_data, valid_data, test_data, n_node = prepare_dataset(device=device, data_dir=args.data_dir)
 
     logger.info("Building Model ...")
     model = trainer.build(
@@ -43,6 +43,7 @@ def main(args: EasyDict):
     trainer.run(
         model=model,
         train_data=train_data,
+        valid_data=valid_data,
         args = args
     )
     
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     arg('--hidden_dim', type=int, default = 64)
     arg('--n_layers', type=int, default = 1)
     arg('--alpha', type=float, default = None)
-    arg('--n_epochs', type=int, default = 30)
+    arg('--n_epochs', type=int, default = 20)
     arg('--run_name', type=str, default = None)
     
     args = parser.parse_args()

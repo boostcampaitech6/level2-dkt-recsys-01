@@ -40,20 +40,24 @@ def run(
     os.makedirs(name=f'{args.model_dir}{args.run_name}/', exist_ok=True)
 
     if valid_data is None:
+        print("VALID DATA IS NONE")
+        breakpoint()
         eids = np.arange(len(train_data["label"]))
         eids = np.random.permutation(eids)[:1000]
         edge, label = train_data["edge"], train_data["label"]
         label = label.to("cpu").detach().numpy()
         valid_data = dict(edge=edge[:, eids], label=label[eids])
 
-    
-    logger.info(f"Training Started : n_epochs={args.n_epochs}")
+    logger.info(f"Training Started")
+    logger.info(f" * n_epochs    : {args.n_epochs}")
+    logger.info(f" * optimizer   : {args.optimizer}")
+    logger.info(f" * scheduler   : {args.scheduler}")
     best_auc, best_epoch = 0, -1
     
     for e in range(args.n_epochs):
         logger.info("Epoch: %s", e)
         # TRAIN
-        train_acc, train_auc, train_loss, wandb_train_cf = train(train_data=train_data, model=model, optimizer=optimizer, scheduler = scheduler)
+        train_acc, train_auc, train_loss, wandb_train_cf = train(train_data=train_data, model=model, optimizer=optimizer, scheduler = scheduler, args = args)
     
         # VALID
         valid_acc, valid_auc, valid_loss, wandb_valid_cf = validate(valid_data=valid_data, model=model)
@@ -78,7 +82,7 @@ def run(
     logger.info(f"Best Weight Confirmed : {best_epoch+1}'th epoch")
     
 
-def train(model: nn.Module, train_data: dict, optimizer: torch.optim.Optimizer,  scheduler:torch.optim.lr_scheduler._LRScheduler):
+def train(model: nn.Module, train_data: dict, optimizer: torch.optim.Optimizer,  scheduler:torch.optim.lr_scheduler._LRScheduler, args: EasyDict):
     train_pred = model(train_data["edge"])
     train_loss = model.link_pred_loss(pred=train_pred, edge_label=train_data["label"])
     
@@ -94,7 +98,7 @@ def train(model: nn.Module, train_data: dict, optimizer: torch.optim.Optimizer, 
     train_loss.backward()
     optimizer.step()
     
-    if scheduler == "plateau":
+    if args.scheduler == "plateau":
         scheduler.step(train_auc)
     else:
         scheduler.step()
@@ -107,14 +111,15 @@ def train(model: nn.Module, train_data: dict, optimizer: torch.optim.Optimizer, 
 
 
 def validate(valid_data: dict, model: nn.Module):
+    #breakpoint()
     with torch.no_grad():
         valid_pred = model(valid_data["edge"])
-        valid_loss = model.link_pred_loss(pred=valid_pred, edge_label=torch.from_numpy(valid_data["label"]).view(-1).to("cuda"))
-        
+        valid_loss = model.link_pred_loss(pred=valid_pred, edge_label=valid_data["label"])
+
         valid_prob = model.predict_link(edge_index=valid_data["edge"], prob=True)
         valid_prob = valid_prob.detach().cpu().numpy()
         
-        valid_label = valid_data["label"]
+        valid_label = valid_data["label"].detach().cpu().numpy()
         valid_acc = accuracy_score(y_true=valid_label, y_pred=valid_prob > 0.5)
         valid_auc = roc_auc_score(y_true=valid_label, y_score=valid_prob)
     
