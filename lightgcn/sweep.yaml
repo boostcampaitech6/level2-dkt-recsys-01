@@ -1,0 +1,15 @@
+program: train.py
+name: lightgcn_sweep
+method: bayes
+metric:
+  goal: maximize
+  name: valid_auc
+parameters:
+  lr:
+    distribution: uniform
+    min: 0.001
+    max: 0.1
+  optimizer:
+    values: ["adam", "adamW", "sgd", "adagrad"]
+  scheduler:
+    values: ["plateau", "lambda", "step", "cosine_annealing"]
