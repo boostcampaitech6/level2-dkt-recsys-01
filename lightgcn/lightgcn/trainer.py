@@ -32,16 +32,9 @@ def run(
     model: nn.Module,
     train_data: dict,
     valid_data: dict = None,
-    # n_epochs: int = 100,
-    # learning_rate: float = 0.01,
-    # model_dir: str = None,
-    # run_name: str = None,
     args: EasyDict = None
 ):
     model.train()
-    #optimizer = torch.optim.Adam(params=model.parameters(), lr=args.learning_rate)
-    
-    
     optimizer = get_optimizer(model=model, args=args)
     scheduler = get_scheduler(optimizer=optimizer, args=args)
     os.makedirs(name=f'{args.model_dir}{args.run_name}/', exist_ok=True)
