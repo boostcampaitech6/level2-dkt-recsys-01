@@ -244,7 +244,7 @@ def update_params(loss: torch.Tensor,
                   args):
     loss.backward()
     nn.utils.clip_grad_norm_(model.parameters(), args.clip_grad)
-    if args.scheduler == "linear_warmup":
+    if args.scheduler in ["linear_warmup", "lambda", "step", "cosine_annealing"]:
         scheduler.step()
     optimizer.step()
     optimizer.zero_grad()

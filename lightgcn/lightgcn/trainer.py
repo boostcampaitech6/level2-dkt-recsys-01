@@ -1,4 +1,5 @@
 import os
+import math
 import wandb
 import numpy as np
 import pandas as pd
@@ -8,6 +9,8 @@ from easydict import EasyDict
 from torch_geometric.nn.models import LightGCN
 from sklearn.metrics import accuracy_score, roc_auc_score
 from .utils import get_logger, logging_conf
+from .scheduler import get_scheduler
+from .optimizer import get_optimizer
 
 logger = get_logger(logger_conf=logging_conf)
 
@@ -29,16 +32,19 @@ def run(
     model: nn.Module,
     train_data: dict,
     valid_data: dict = None,
-    n_epochs: int = 100,
-    learning_rate: float = 0.01,
-    model_dir: str = None,
-    run_name: str = None,
+    # n_epochs: int = 100,
+    # learning_rate: float = 0.01,
+    # model_dir: str = None,
+    # run_name: str = None,
+    args: EasyDict = None
 ):
     model.train()
-
-    optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate)
-
-    os.makedirs(name=f'{model_dir}{run_name}/', exist_ok=True)
+    #optimizer = torch.optim.Adam(params=model.parameters(), lr=args.learning_rate)
+    
+    
+    optimizer = get_optimizer(model=model, args=args)
+    scheduler = get_scheduler(optimizer=optimizer, args=args)
+    os.makedirs(name=f'{args.model_dir}{args.run_name}/', exist_ok=True)
 
     if valid_data is None:
         eids = np.arange(len(train_data["label"]))
@@ -48,12 +54,13 @@ def run(
         valid_data = dict(edge=edge[:, eids], label=label[eids])
 
     
-    logger.info(f"Training Started : n_epochs={n_epochs}")
+    logger.info(f"Training Started : n_epochs={args.n_epochs}")
     best_auc, best_epoch = 0, -1
-    for e in range(n_epochs):
+    
+    for e in range(args.n_epochs):
         logger.info("Epoch: %s", e)
         # TRAIN
-        train_acc, train_auc, train_loss, wandb_train_cf = train(train_data=train_data, model=model, optimizer=optimizer)
+        train_acc, train_auc, train_loss, wandb_train_cf = train(train_data=train_data, model=model, optimizer=optimizer, scheduler = scheduler)
     
         # VALID
         valid_acc, valid_auc, valid_loss, wandb_valid_cf = validate(valid_data=valid_data, model=model)
@@ -70,12 +77,15 @@ def run(
         if valid_auc > best_auc:
             logger.info("Best model updated AUC from %.4f to %.4f", best_auc, valid_auc)
             best_auc, best_epoch = valid_auc, e
-            torch.save(obj= {"model": model.state_dict(), "epoch": e + 1}, f=os.path.join(f'{model_dir}{run_name}/', f"{run_name}_best_model.pt"))
-    torch.save(obj={"model": model.state_dict(), "epoch": e + 1}, f=os.path.join(f'{model_dir}{run_name}/', f"{run_name}_last_model.pt"))
+            torch.save(obj= {"model": model.state_dict(), "epoch": e + 1}, f=os.path.join(f'{args.model_dir}{args.run_name}/', f"{args.run_name}_best_model.pt"))
+        if args.scheduler == "plateau" and not isinstance(valid_data, type(None)):
+            scheduler.step(best_auc)
+            
+    torch.save(obj={"model": model.state_dict(), "epoch": e + 1}, f=os.path.join(f'{args.model_dir}{args.run_name}/', f"{args.run_name}_last_model.pt"))
     logger.info(f"Best Weight Confirmed : {best_epoch+1}'th epoch")
     
 
-def train(model: nn.Module, train_data: dict, optimizer: torch.optim.Optimizer):
+def train(model: nn.Module, train_data: dict, optimizer: torch.optim.Optimizer,  scheduler:torch.optim.lr_scheduler._LRScheduler):
     train_pred = model(train_data["edge"])
     train_loss = model.link_pred_loss(pred=train_pred, edge_label=train_data["label"])
     
@@ -90,6 +100,11 @@ def train(model: nn.Module, train_data: dict, optimizer: torch.optim.Optimizer):
     optimizer.zero_grad()
     train_loss.backward()
     optimizer.step()
+    
+    if scheduler == "plateau":
+        scheduler.step(train_auc)
+    else:
+        scheduler.step()
     
     logger.info("TRAIN ACC : %.4f AUC : %.4f LOSS : %.4f", train_acc, train_auc, train_loss.item())
     wandb_train_cf = wandb.plot.confusion_matrix(
@@ -118,19 +133,19 @@ def validate(valid_data: dict, model: nn.Module):
     return valid_acc, valid_auc, valid_loss, wandb_valid_cf
 
 
-def inference(model: nn.Module, data: dict, output_dir: str, model_dir: str, run_name: str):
+def inference(model: nn.Module, data: dict, args : EasyDict):
     model.eval()
     with torch.no_grad():
         pred = model.predict_link(edge_index=data["edge"], prob=True)
         
     logger.info("Saving Result ...")
     pred = pred.detach().cpu().numpy()
-    os.makedirs(name=output_dir, exist_ok=True)
-    last_write_path = os.path.join(output_dir, f"{run_name}_last_submission.csv")
+    os.makedirs(name=args.output_dir, exist_ok=True)
+    last_write_path = os.path.join(args.output_dir, f"{args.run_name}_last_submission.csv")
     pd.DataFrame({"prediction": pred}).to_csv(path_or_buf=last_write_path, index_label="id")
     
-    best_model = model.load(os.path.join(f'{model_dir}{run_name}/', f"{run_name}_best_model.pt"))
-    best_write_path = os.path.join(output_dir, f"{run_name}_best_submission.csv")
+    best_model = torch.load(os.path.join(f'{args.model_dir}{args.run_name}/', f"{args.run_name}_best_model.pt"))
+    best_write_path = os.path.join(args.output_dir, f"{args.run_name}_best_submission.csv")
     pd.DataFrame({"prediction": pred}).to_csv(path_or_buf=best_write_path, index_label="id")
     
     logger.info("Successfully saved submission as %s", last_write_path)

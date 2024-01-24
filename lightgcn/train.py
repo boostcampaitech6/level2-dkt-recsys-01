@@ -1,5 +1,6 @@
 import os
 import yaml
+import argparse
 from easydict import EasyDict
 from datetime import datetime
 import torch
@@ -18,9 +19,9 @@ def main(args: EasyDict):
     global wandb_id
     wandb_id = wandb.util.generate_id()
     args.timestamp = datetime.today().strftime("%Y%m%d%H%M")
-    run_name = f'{args.model}_{args.timestamp}'
+    args.run_name = f'{args.model}_{args.timestamp}'
     wandb.login()
-    wandb.init(id = wandb_id, resume = "allow", project="lightgcn", name= run_name, config=vars(args))
+    wandb.init(id = wandb_id, resume = "allow", project="lightgcn", name= args.run_name, config=vars(args))
     set_seeds(args.seed)
     
     use_cuda: bool = torch.cuda.is_available() and args.use_cuda_if_available
@@ -42,26 +43,50 @@ def main(args: EasyDict):
     trainer.run(
         model=model,
         train_data=train_data,
-        n_epochs=args.n_epochs,
-        learning_rate=args.lr,
-        model_dir=args.model_dir,
-        run_name=run_name
+        # n_epochs=args.n_epochs,
+        # learning_rate=args.lr,
+        # model_dir=args.model_dir,
+        # run_name=run_name,
+        args = args
     )
     
     trainer.inference(
         model=model,
         data=test_data,
-        output_dir=args.output_dir,
-        model_dir= args.model_dir,
-        run_name=run_name)
+        # output_dir=args.output_dir,
+        # model_dir= args.model_dir,
+        # run_name=run_name,
+        args= args)
 
 
 if __name__ == "__main__":
-    with open('lightgcn/args.yaml') as file:
-        args = EasyDict(yaml.safe_load(file))
+    parser = argparse.ArgumentParser(description='parser')
+    arg = parser.add_argument
+    arg('--lr', type=float, default = 0.001)
+    arg('--optimizer', type=str, default = "adam")
+    arg('--scheduler', type=str, default = "plateau")
+    arg('--seed', type = int, default = 42)
+    arg('--model', type=str, default = 'lightgcn')
+    arg('--use_cuda_if_available', type=bool, default = True)
+    arg('--data_dir', type=str, default = '/opt/ml/input/data/')
+    arg('--model_dir', type=str, default='models/')
+    arg('--model_name', type=str, default='best_model.pt')
+    arg('--output_dir', type=str, default='outputs/')
+    arg('--hidden_dim', type=int, default = 64)
+    arg('--n_layers', type=int, default = 1)
+    arg('--alpha', type=float, default = None)
+    arg('--n_epochs', type=int, default = 30)
+    arg('--run_name', type=str, default = None)
+    
+    args = parser.parse_args()
+    
+    # breakpoint()
+    # with open('lightgcn/args.yaml') as file:
+    #     args_yaml = EasyDict(yaml.safe_load(file))
     if isinstance(args.alpha, str):
         args.alpha = eval(args.alpha)
     if isinstance(args.use_cuda_if_available, str):
         args.use_cuda_if_available = eval(args.use_cuda_if_available)
+        
     os.makedirs(name=args.model_dir, exist_ok=True)
     main(args=args)
