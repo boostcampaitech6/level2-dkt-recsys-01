@@ -43,19 +43,12 @@ def main(args: EasyDict):
     trainer.run(
         model=model,
         train_data=train_data,
-        # n_epochs=args.n_epochs,
-        # learning_rate=args.lr,
-        # model_dir=args.model_dir,
-        # run_name=run_name,
         args = args
     )
     
     trainer.inference(
         model=model,
         data=test_data,
-        # output_dir=args.output_dir,
-        # model_dir= args.model_dir,
-        # run_name=run_name,
         args= args)
 
 
@@ -80,9 +73,6 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # breakpoint()
-    # with open('lightgcn/args.yaml') as file:
-    #     args_yaml = EasyDict(yaml.safe_load(file))
     if isinstance(args.alpha, str):
         args.alpha = eval(args.alpha)
     if isinstance(args.use_cuda_if_available, str):
