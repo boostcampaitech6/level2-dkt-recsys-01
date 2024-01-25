@@ -36,7 +36,6 @@ def load_data(data_dir: str) -> pd.DataFrame:
 
 
 def separate_data(data: pd.DataFrame) -> Tuple[pd.DataFrame]:
-    # breakpoint()
     train_num = int(len(data)*0.8)
     data = data.sample(frac=1).reset_index(drop=True)
     train_data = data[data.answerCode >= 0].iloc[:train_num, :]

@@ -1,3 +1,4 @@
+# 1번으로 해보자
 program: train.py
 name: lightgcn_sweep
 method: bayes
@@ -10,6 +11,6 @@ parameters:
     min: 0.001
     max: 0.1
   optimizer:
-    values: ["adam", "adamW", "sgd", "adagrad"]
+    values: ["adamW"] #["adam", "adamW", "sgd", "adagrad"]
   scheduler:
-    values: ["plateau", "lambda", "step", "cosine_annealing"]
+    values: ["cosine_annealing"] # ["plateau", "lambda", "step", "cosine_annealing"]

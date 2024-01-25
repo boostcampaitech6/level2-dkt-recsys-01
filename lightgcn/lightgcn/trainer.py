@@ -31,8 +31,8 @@ def build(n_node: int, weight: str = None, **kwargs):
 def run(
     model: nn.Module,
     train_data: dict,
-    valid_data: dict = None,
-    args: EasyDict = None
+    valid_data: dict,
+    args: EasyDict
 ):
     model.train()
     optimizer = get_optimizer(model=model, args=args)
@@ -50,6 +50,7 @@ def run(
 
     logger.info(f"Training Started")
     logger.info(f" * n_epochs    : {args.n_epochs}")
+    logger.info(f" * lr          : {args.lr}")
     logger.info(f" * optimizer   : {args.optimizer}")
     logger.info(f" * scheduler   : {args.scheduler}")
     best_auc, best_epoch = 0, -1
@@ -62,12 +63,12 @@ def run(
         # VALID
         valid_acc, valid_auc, valid_loss, wandb_valid_cf = validate(valid_data=valid_data, model=model)
         
-        wandb.log(dict(train_loss=train_loss,
+        wandb.log(dict(train_loss = train_loss,
                        valid_loss = valid_loss,
-                       train_acc=train_acc,
-                       train_auc=train_auc,
-                       valid_acc=valid_acc,
-                       valid_auc=valid_auc,
+                       train_acc = train_acc,
+                       train_auc = train_auc,
+                       valid_acc = valid_acc,
+                       valid_auc = valid_auc,
                        train_confusion_matrix = wandb_train_cf,
                        valid_confusion_matrix = wandb_valid_cf))
 
@@ -75,8 +76,11 @@ def run(
             logger.info("Best model updated AUC from %.4f to %.4f", best_auc, valid_auc)
             best_auc, best_epoch = valid_auc, e
             torch.save(obj= {"model": model.state_dict(), "epoch": e + 1}, f=os.path.join(f'{args.model_dir}{args.run_name}/', f"{args.run_name}_best_model.pt"))
+        # 1번
         if args.scheduler == "plateau" and not isinstance(valid_data, type(None)):
             scheduler.step(best_auc)
+        else:
+            scheduler.step()
             
     torch.save(obj={"model": model.state_dict(), "epoch": e + 1}, f=os.path.join(f'{args.model_dir}{args.run_name}/', f"{args.run_name}_last_model.pt"))
     logger.info(f"Best Weight Confirmed : {best_epoch+1}'th epoch")
@@ -97,12 +101,7 @@ def train(model: nn.Module, train_data: dict, optimizer: torch.optim.Optimizer, 
     optimizer.zero_grad()
     train_loss.backward()
     optimizer.step()
-    
-    if args.scheduler == "plateau":
-        scheduler.step(train_auc)
-    else:
-        scheduler.step()
-    
+
     logger.info("TRAIN ACC : %.4f AUC : %.4f LOSS : %.4f", train_acc, train_auc, train_loss.item())
     wandb_train_cf = wandb.plot.confusion_matrix(
             probs=None, y_true=train_label, preds=train_prob > 0.5,
