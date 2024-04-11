@@ -1,5 +1,6 @@
 # dkt args
 seed: 42                        # int, seed
+model: lightgcn                 # str, model name
 use_cuda_if_available: True     # bool, Use GPU
 data_dir: /opt/ml/input/data/   # str, data directory
 
@@ -14,4 +15,3 @@ alpha: None                     # float
 
 # training
 n_epochs: 20                    # int, number -f epochs
-lr: .001                        # float, learning rate

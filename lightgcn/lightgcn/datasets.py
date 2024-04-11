@@ -1,6 +1,5 @@
 import os
 from typing import Tuple
-
 import pandas as pd
 import torch
 
@@ -12,15 +11,17 @@ logger = get_logger(logging_conf)
 
 def prepare_dataset(device: str, data_dir: str) -> Tuple[dict, dict, int]:
     data = load_data(data_dir=data_dir)
-    train_data, test_data = separate_data(data=data)
+    train_data, valid_data, test_data = separate_data(data=data)
     id2index: dict = indexing_data(data=data)
     train_data_proc = process_data(data=train_data, id2index=id2index, device=device)
+    valid_data_proc = process_data(data=valid_data, id2index=id2index, device=device)
     test_data_proc = process_data(data=test_data, id2index=id2index, device=device)
 
     print_data_stat(train_data, "Train")
+    print_data_stat(valid_data, "Valid")
     print_data_stat(test_data, "Test")
 
-    return train_data_proc, test_data_proc, len(id2index)
+    return train_data_proc, valid_data_proc, test_data_proc, len(id2index)
 
 
 def load_data(data_dir: str) -> pd.DataFrame: 
@@ -35,9 +36,13 @@ def load_data(data_dir: str) -> pd.DataFrame:
 
 
 def separate_data(data: pd.DataFrame) -> Tuple[pd.DataFrame]:
-    train_data = data[data.answerCode >= 0]
+    # breakpoint()
+    train_num = int(len(data)*0.8)
+    data = data.sample(frac=1).reset_index(drop=True)
+    train_data = data[data.answerCode >= 0].iloc[:train_num, :]
+    valid_data = data[data.answerCode >= 0].iloc[train_num:, :]
     test_data = data[data.answerCode < 0]
-    return train_data, test_data
+    return train_data, valid_data, test_data
 
 
 def indexing_data(data: pd.DataFrame) -> dict:
