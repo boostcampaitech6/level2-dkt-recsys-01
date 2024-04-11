@@ -1,4 +1,4 @@
-from lgbm import trainer, datasets
+from lgbm import trainer, datasets, datasets_custom
 import os, yaml
 import numpy as np
 import torch
@@ -11,15 +11,26 @@ from easydict import EasyDict
 logger = get_logger(logging_conf)
 
 def main(args):
+
     wandb.login()
     set_seeds(args.seed)
     args.device = "cuda" if torch.cuda.is_available() else "cpu"
+
     logger.info("Preparing data ...")
-    preprocess = datasets.Preprocess(args)
-    data = preprocess.load_data(args.data_dir, args.file_name)
+    if args.dataset_type == 'full':
+        preprocess = datasets.Preprocess(args)
+        data = preprocess.load_data(args.data_dir, args.file_name)
+        test_data = preprocess.load_test_data(args.data_dir, args.test_file_name)
+    else:
+        preprocess = datasets_custom.Preprocess(args)
+        data = preprocess.load_data(args.data_dir, args.file_name)
+        test_data = preprocess.load_test_data(args.data_dir, args.test_file_name)
+    column_list = test_data.columns.tolist()
+
     logger.info("Building Model ...")
     logger.info("Start Training ...")
     model = trainer.train_valid(data)
+
     # 시간 설정
     now = time.localtime()
     now_date = time.strftime('%Y%m%d', now)
@@ -29,13 +40,10 @@ def main(args):
     # wandb 이름 설정
     model_filename=f"{save_time}_{type(model).__name__}"
     wandb.init(project="dkt", config=vars(args), name=model_filename)
-
-    test_data = preprocess.load_test_data(args.data_dir, args.test_file_name)
-    column_list = test_data.columns.tolist()
+    
     # 학습에 사용된 컬럼 정보 출력
     print(column_list)
     trainer.inference(model_filename, test_data, model)
-
 
 if __name__ == "__main__":
     with open('lgbm/args.yaml') as file:

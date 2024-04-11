@@ -11,7 +11,7 @@ def train_valid(data):
     LGBM_CONFIG,
     data["lgb_train"],
     valid_sets=[data["lgb_train"], data["lgb_test"]],
-    num_boost_round=500)
+    num_boost_round=15)
     
     best_iter = model.best_iteration
     preds = model.predict(data["train"], num_iteration=best_iter)

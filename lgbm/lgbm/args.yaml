@@ -9,3 +9,5 @@ model_dir: models/              # str, model directory
 model_name: best_model.pt       # str, model file name
 output_dir: outputs/            # str, output directory
 test_file_name: test_data.csv   # str, test file name
+
+dataset_type: last              # str, full(datasets), last(datasets-custom), sample(datasets-custom)
