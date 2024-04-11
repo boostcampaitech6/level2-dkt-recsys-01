@@ -6,7 +6,7 @@ from datetime import datetime
 import torch
 import wandb
 
-from lightgcn.datasets import prepare_dataset
+from lightgcn.datasets import prepare_dataset, prepare_dataset2
 from lightgcn import trainer
 from lightgcn.utils import get_logger, set_seeds, logging_conf
 
@@ -29,6 +29,7 @@ def main(args: EasyDict):
 
     logger.info("Preparing data ...")
     train_data, valid_data, test_data, n_node = prepare_dataset(device=device, data_dir=args.data_dir)
+    train_edges, train_edge_labels, valid_edges, valid_edge_labels = prepare_dataset2(device=device, data_dir=args.data_dir)
 
     logger.info("Building Model ...")
     model = trainer.build(
@@ -40,10 +41,19 @@ def main(args: EasyDict):
     model = model.to(device)
     
     logger.info("Start Training ...")
-    trainer.run(
+    # trainer.run(
+    #     model=model,
+    #     train_data=train_data,
+    #     valid_data=valid_data,
+    #     args = args
+    # )
+    
+    trainer.run2(
         model=model,
-        train_data=train_data,
-        valid_data=valid_data,
+        train_edges=train_edges,
+        train_edge_labels=train_edge_labels,
+        valid_edges=valid_edges,
+        valid_edge_labels =valid_edge_labels,
         args = args
     )
     
@@ -69,7 +79,7 @@ if __name__ == "__main__":
     arg('--hidden_dim', type=int, default = 64)
     arg('--n_layers', type=int, default = 1)
     arg('--alpha', type=float, default = None)
-    arg('--n_epochs', type=int, default = 20)
+    arg('--n_epochs', type=int, default = 100)
     arg('--run_name', type=str, default = None)
     
     args = parser.parse_args()
