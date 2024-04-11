@@ -74,7 +74,6 @@ def prepare_dataset2(device: str, data_dir: str) -> Tuple[dict, dict, int]:
     valid_edge_labels = torch.tensor(valid_edge_labels).squeeze(-1).to(device)
 
     return train_edges, train_edge_labels, valid_edges, valid_edge_labels
-    
 
 def load_data(data_dir: str) -> pd.DataFrame: 
     path1 = os.path.join(data_dir, "train_data.csv")
@@ -88,6 +87,7 @@ def load_data(data_dir: str) -> pd.DataFrame:
 
 
 def separate_data(data: pd.DataFrame) -> Tuple[pd.DataFrame]:
+  
     train_num = int(len(data)*0.8)
     data = data.sample(frac=1).reset_index(drop=True)
     train_data = data[data.answerCode >= 0].iloc[:train_num, :]

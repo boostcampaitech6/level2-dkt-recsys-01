@@ -6,6 +6,7 @@ import pandas as pd
 import torch
 from torch import nn
 from copy import deepcopy
+
 from easydict import EasyDict
 from torch_geometric.nn.models import LightGCN
 from sklearn.metrics import accuracy_score, roc_auc_score
@@ -32,8 +33,8 @@ def build(n_node: int, weight: str = None, **kwargs):
 def run(
     model: nn.Module,
     train_data: dict,
-    valid_data: dict,
-    args: EasyDict
+    valid_data: dict = None,
+    args: EasyDict = None
 ):
     model.train()
     optimizer = get_optimizer(model=model, args=args)
@@ -136,7 +137,6 @@ def run2(
             scheduler.step(best_auc)
         else:
             scheduler.step()
-    
 
 def train(model: nn.Module, train_data: dict, optimizer: torch.optim.Optimizer,  scheduler:torch.optim.lr_scheduler._LRScheduler, args: EasyDict):
     train_pred = model(train_data["edge"])
@@ -153,7 +153,12 @@ def train(model: nn.Module, train_data: dict, optimizer: torch.optim.Optimizer, 
     optimizer.zero_grad()
     train_loss.backward()
     optimizer.step()
-
+    
+    if args.scheduler == "plateau":
+        scheduler.step(train_auc)
+    else:
+        scheduler.step()
+        
     logger.info("TRAIN ACC : %.4f AUC : %.4f LOSS : %.4f", train_acc, train_auc, train_loss.item())
     wandb_train_cf = wandb.plot.confusion_matrix(
             probs=None, y_true=train_label, preds=train_prob > 0.5,
@@ -213,7 +218,6 @@ def validate2(optimizer, model, edge_index, edge_labels):
     logger.info("VALID ACC : %.4f AUC : %.4f LOSS : %.4f", accuracy, auroc, loss.item())
     return loss, auroc, accuracy
 
-
 def inference(model: nn.Module, data: dict, args : EasyDict):
     model.eval()
     with torch.no_grad():
@@ -224,5 +228,11 @@ def inference(model: nn.Module, data: dict, args : EasyDict):
     os.makedirs(name=args.output_dir, exist_ok=True)
     last_write_path = os.path.join(args.output_dir, f"{args.run_name}_last_submission.csv")
     pd.DataFrame({"prediction": pred}).to_csv(path_or_buf=last_write_path, index_label="id")
-
     logger.info("Successfully saved submission as %s", last_write_path)
+  
+    best_model = torch.load(os.path.join(f'{args.model_dir}{args.run_name}/', f"{args.run_name}_best_model.pt"))
+    best_write_path = os.path.join(args.output_dir, f"{args.run_name}_best_submission.csv")
+    pd.DataFrame({"prediction": pred}).to_csv(path_or_buf=best_write_path, index_label="id")
+    
+    logger.info("Successfully saved submission as %s", last_write_path)
+    logger.info("Successfully saved submission as %s", best_write_path)

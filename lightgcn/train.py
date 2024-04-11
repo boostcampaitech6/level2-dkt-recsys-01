@@ -29,7 +29,6 @@ def main(args: EasyDict):
 
     logger.info("Preparing data ...")
     train_data, valid_data, test_data, n_node = prepare_dataset(device=device, data_dir=args.data_dir)
-    
     train_edges, train_edge_labels, valid_edges, valid_edge_labels = prepare_dataset2(device=device, data_dir=args.data_dir)
 
     logger.info("Building Model ...")
